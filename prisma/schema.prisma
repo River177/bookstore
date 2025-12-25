@@ -1,0 +1,327 @@
+// Prisma Schema for Online Bookstore
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================================
+// Part 1: User Client Tables
+// ==========================================
+
+/// 用户表
+model User {
+  id          Int       @id @default(autoincrement()) @map("user_id")
+  username    String    @unique @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  email       String    @unique @db.VarChar(100)
+  fullName    String    @map("full_name") @db.VarChar(100)
+  phone       String?   @db.VarChar(20)
+  address     String?   @db.VarChar(255)
+  city        String?   @db.VarChar(50)
+  postalCode  String?   @map("postal_code") @db.VarChar(20)
+  status      Int       @default(1) @db.SmallInt
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  cart           ShoppingCart?
+  orders         Order[]
+  paymentMethods PaymentMethod[]
+
+  @@map("users")
+}
+
+/// 图书分类表
+model Category {
+  id          Int     @id @default(autoincrement()) @map("category_id")
+  name        String  @db.VarChar(50)
+  description String? @db.VarChar(255)
+
+  // Relations
+  books Book[]
+
+  @@map("categories")
+}
+
+/// 图书表
+model Book {
+  id            Int      @id @default(autoincrement()) @map("book_id")
+  isbn          String   @unique @db.VarChar(20)
+  title         String   @db.VarChar(200)
+  author        String   @db.VarChar(100)
+  publisher     String?  @db.VarChar(100)
+  price         Decimal  @db.Decimal(10, 2)
+  stockQuantity Int      @default(0) @map("stock_quantity")
+  description   String?  @db.Text
+  coverImage    String?  @map("cover_image") @db.VarChar(255)
+  categoryId    Int?     @map("category_id")
+  status        Int      @default(1) @db.SmallInt
+  salesCount    Int      @default(0) @map("sales_count")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  category   Category?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+  stockLogs  StockLog[]
+
+  @@index([categoryId])
+  @@index([title])
+  @@index([author])
+  @@map("books")
+}
+
+/// 购物车表
+model ShoppingCart {
+  id        Int      @id @default(autoincrement()) @map("cart_id")
+  userId    Int      @unique @map("user_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("shopping_carts")
+}
+
+/// 购物车项表
+model CartItem {
+  id       Int      @id @default(autoincrement()) @map("cart_item_id")
+  cartId   Int      @map("cart_id")
+  bookId   Int      @map("book_id")
+  quantity Int      @default(1)
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  // Relations
+  cart ShoppingCart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  book Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, bookId])
+  @@map("cart_items")
+}
+
+/// 支付方式表
+model PaymentMethod {
+  id         Int      @id @default(autoincrement()) @map("payment_id")
+  userId     Int      @map("user_id")
+  cardType   String   @map("card_type") @db.VarChar(20)
+  cardNumber String   @map("card_number") @db.VarChar(20)
+  cardHolder String   @map("card_holder") @db.VarChar(100)
+  expiryDate String   @map("expiry_date") @db.VarChar(10)
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@map("payment_methods")
+}
+
+/// 订单表
+model Order {
+  id              Int      @id @default(autoincrement()) @map("order_id")
+  userId          Int      @map("user_id")
+  paymentId       Int?     @map("payment_id")
+  totalAmount     Decimal  @map("total_amount") @db.Decimal(10, 2)
+  status          String   @default("pending") @db.VarChar(20)
+  shippingAddress String   @map("shipping_address") @db.VarChar(255)
+  orderDate       DateTime @default(now()) @map("order_date")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
+  paymentMethod PaymentMethod? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  items         OrderItem[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([orderDate])
+  @@map("orders")
+}
+
+/// 订单项表
+model OrderItem {
+  id        Int     @id @default(autoincrement()) @map("order_item_id")
+  orderId   Int     @map("order_id")
+  bookId    Int     @map("book_id")
+  quantity  Int
+  unitPrice Decimal @map("unit_price") @db.Decimal(10, 2)
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  book  Book  @relation(fields: [bookId], references: [id], onDelete: Restrict)
+
+  @@index([orderId])
+  @@index([bookId])
+  @@map("order_items")
+}
+
+// ==========================================
+// Part 2: Admin Tables
+// ==========================================
+
+/// 管理员表
+model Admin {
+  id          Int       @id @default(autoincrement()) @map("admin_id")
+  username    String    @unique @db.VarChar(50)
+  password    String    @db.VarChar(255)
+  email       String    @unique @db.VarChar(100)
+  fullName    String    @map("full_name") @db.VarChar(100)
+  phone       String?   @db.VarChar(20)
+  avatar      String?   @db.VarChar(255)
+  status      Int       @default(1) @db.SmallInt
+  lastLoginAt DateTime? @map("last_login_at")
+  lastLoginIp String?   @map("last_login_ip") @db.VarChar(50)
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  roles         AdminRole[]
+  operationLogs OperationLog[]
+
+  @@map("admins")
+}
+
+/// 角色表
+model Role {
+  id          Int      @id @default(autoincrement()) @map("role_id")
+  roleName    String   @unique @map("role_name") @db.VarChar(50)
+  roleKey     String   @unique @map("role_key") @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  status      Int      @default(1) @db.SmallInt
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  admins      AdminRole[]
+  permissions RolePermission[]
+
+  @@map("roles")
+}
+
+/// 权限表
+model Permission {
+  id             Int      @id @default(autoincrement()) @map("permission_id")
+  permissionName String   @map("permission_name") @db.VarChar(50)
+  permissionKey  String   @unique @map("permission_key") @db.VarChar(100)
+  module         String   @db.VarChar(50)
+  description    String?  @db.VarChar(255)
+  sortOrder      Int      @default(0) @map("sort_order")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  roles RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+/// 角色-权限关联表
+model RolePermission {
+  id           Int      @id @default(autoincrement())
+  roleId       Int      @map("role_id")
+  permissionId Int      @map("permission_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+/// 管理员-角色关联表
+model AdminRole {
+  id        Int      @id @default(autoincrement())
+  adminId   Int      @map("admin_id")
+  roleId    Int      @map("role_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  role  Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, roleId])
+  @@map("admin_roles")
+}
+
+/// 操作日志表
+model OperationLog {
+  id            BigInt   @id @default(autoincrement()) @map("log_id")
+  adminId       Int?     @map("admin_id")
+  adminName     String?  @map("admin_name") @db.VarChar(50)
+  module        String   @db.VarChar(50)
+  action        String   @db.VarChar(50)
+  targetType    String?  @map("target_type") @db.VarChar(50)
+  targetId      Int?     @map("target_id")
+  content       String?  @db.Text
+  requestUrl    String?  @map("request_url") @db.VarChar(255)
+  requestMethod String?  @map("request_method") @db.VarChar(10)
+  requestParams String?  @map("request_params") @db.Text
+  responseCode  Int?     @map("response_code")
+  ipAddress     String?  @map("ip_address") @db.VarChar(50)
+  userAgent     String?  @map("user_agent") @db.VarChar(500)
+  executionTime Int?     @map("execution_time")
+  status        Int      @default(1) @db.SmallInt
+  errorMessage  String?  @map("error_message") @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  // Relations
+  admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([module])
+  @@index([action])
+  @@index([createdAt])
+  @@map("operation_logs")
+}
+
+/// 库存变动记录表
+model StockLog {
+  id             BigInt   @id @default(autoincrement()) @map("log_id")
+  bookId         Int      @map("book_id")
+  changeType     String   @map("change_type") @db.VarChar(20)
+  changeQuantity Int      @map("change_quantity")
+  beforeQuantity Int      @map("before_quantity")
+  afterQuantity  Int      @map("after_quantity")
+  relatedOrderId Int?     @map("related_order_id")
+  operatorId     Int?     @map("operator_id")
+  operatorType   String   @default("admin") @map("operator_type") @db.VarChar(10)
+  remark         String?  @db.VarChar(255)
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  // Relations
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@index([bookId])
+  @@index([changeType])
+  @@index([createdAt])
+  @@map("stock_logs")
+}
+
+/// 系统配置表
+model SystemConfig {
+  id          Int      @id @default(autoincrement()) @map("config_id")
+  configKey   String   @unique @map("config_key") @db.VarChar(100)
+  configValue String?  @map("config_value") @db.Text
+  configType  String   @default("string") @map("config_type") @db.VarChar(20)
+  configGroup String   @default("general") @map("config_group") @db.VarChar(50)
+  description String?  @db.VarChar(255)
+  isPublic    Int      @default(0) @map("is_public") @db.SmallInt
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([configGroup])
+  @@map("system_configs")
+}

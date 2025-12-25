@@ -7,10 +7,10 @@ import vikeVue from "vike-vue/config";
 
 export default {
   // https://vike.dev/head-tags
-  title: "My Vike App",
+  title: "网上书店 - Online Bookstore",
 
-  description: "Demo showcasing Vike",
-  passToClient: ["user"],
+  description: "专业的在线图书购物平台",
+  passToClient: ["user", "pageProps"],
   extends: [vikeVue, vikePhoton],
 
   // https://vike.dev/vike-photon
@@ -18,5 +18,5 @@ export default {
     server: "../server/entry.ts",
   },
 
-  prerender: true,
+  prerender: false,
 } as Config;

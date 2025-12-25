@@ -1,5 +1,6 @@
+// server/entry.ts - Server Entry Point
 import { authjsHandler, authjsSessionMiddleware } from "./authjs-handler";
-import { createTodoHandler } from "./create-todo-handler";
+import { apiHandler } from "./handlers/api.handler";
 import { apply, serve } from "@photonjs/express";
 import express from "express";
 
@@ -10,14 +11,18 @@ export default startApp() as unknown;
 function startApp() {
   const app = express();
 
+  // Parse JSON body
+  app.use(express.json());
+
   apply(app, [
     // Append Auth.js session to context
     authjsSessionMiddleware,
 
-    // Auth.js route. See https://authjs.dev/getting-started/installation
+    // Auth.js route
     authjsHandler,
 
-    createTodoHandler,
+    // Bookstore API routes
+    apiHandler,
   ]);
 
   return serve(app, {
