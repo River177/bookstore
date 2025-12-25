@@ -7,6 +7,15 @@ import { OrderService } from "../services/order.service";
 import { AdminService } from "../services/admin.service";
 import { success, error } from "../../lib/utils/response";
 
+// Helper to get request body
+async function getBody(request: Request): Promise<Record<string, unknown>> {
+  try {
+    return await request.json();
+  } catch {
+    return {};
+  }
+}
+
 /**
  * API Router Handler
  */
@@ -53,20 +62,20 @@ export const apiHandler = enhance(
         return Response.json(success(books));
       }
 
-      // User registration
-      if (path === "/auth/register" && method === "POST") {
-        const body = await request.json();
-        const result = await UserService.register(body);
+      // User registration (using /api/user prefix to avoid Auth.js conflict)
+      if (path === "/user/register" && method === "POST") {
+        const body = await getBody(request);
+        const result = await UserService.register(body as unknown as Parameters<typeof UserService.register>[0]);
         if (!result.success) {
           return Response.json(error(result.message || "Registration failed"), { status: 400 });
         }
         return Response.json(success(result.user, "Registration successful"));
       }
 
-      // User login
-      if (path === "/auth/login" && method === "POST") {
-        const body = await request.json();
-        const result = await UserService.login(body.username, body.password);
+      // User login (using /api/user prefix to avoid Auth.js conflict)
+      if (path === "/user/login" && method === "POST") {
+        const body = await getBody(request);
+        const result = await UserService.login(body.username as string, body.password as string);
         if (!result.success) {
           return Response.json(error(result.message || "Login failed"), { status: 401 });
         }
@@ -84,14 +93,22 @@ export const apiHandler = enhance(
       }
 
       if (path === "/cart/add" && method === "POST") {
-        const body = await request.json();
-        const cart = await CartService.addItem(body.userId, body.bookId, body.quantity || 1);
+        const body = await getBody(request);
+        const cart = await CartService.addItem(
+          Number(body.userId), 
+          Number(body.bookId), 
+          Number(body.quantity) || 1
+        );
         return Response.json(success(cart, "Added to cart"));
       }
 
       if (path === "/cart/update" && method === "PUT") {
-        const body = await request.json();
-        const cart = await CartService.updateItemQuantity(body.userId, body.itemId, body.quantity);
+        const body = await getBody(request);
+        const cart = await CartService.updateItemQuantity(
+          Number(body.userId), 
+          Number(body.itemId), 
+          Number(body.quantity)
+        );
         return Response.json(success(cart, "Cart updated"));
       }
 
@@ -112,8 +129,8 @@ export const apiHandler = enhance(
       }
 
       if (path === "/orders" && method === "POST") {
-        const body = await request.json();
-        const order = await OrderService.createOrder(body);
+        const body = await getBody(request);
+        const order = await OrderService.createOrder(body as unknown as Parameters<typeof OrderService.createOrder>[0]);
         return Response.json(success(order, "Order created"));
       }
 
@@ -133,8 +150,8 @@ export const apiHandler = enhance(
 
       // Admin login
       if (path === "/admin/login" && method === "POST") {
-        const body = await request.json();
-        const admin = await AdminService.login(body.username, body.password);
+        const body = await getBody(request);
+        const admin = await AdminService.login(body.username as string, body.password as string);
         if (!admin) {
           return Response.json(error("Invalid credentials"), { status: 401 });
         }
@@ -161,8 +178,8 @@ export const apiHandler = enhance(
 
       if (path.match(/^\/admin\/users\/\d+\/status$/) && method === "PUT") {
         const userId = Number(path.split("/")[3]);
-        const body = await request.json();
-        const user = await AdminService.updateUserStatus(userId, body.status);
+        const body = await getBody(request);
+        const user = await AdminService.updateUserStatus(userId, body.status as number);
         return Response.json(success(user, "User status updated"));
       }
 
@@ -180,15 +197,15 @@ export const apiHandler = enhance(
       }
 
       if (path === "/admin/books" && method === "POST") {
-        const body = await request.json();
-        const book = await AdminService.createBook(body);
+        const body = await getBody(request);
+        const book = await AdminService.createBook(body as unknown as Parameters<typeof AdminService.createBook>[0]);
         return Response.json(success(book, "Book created"));
       }
 
       if (path.match(/^\/admin\/books\/\d+$/) && method === "PUT") {
         const bookId = Number(path.split("/")[3]);
-        const body = await request.json();
-        const book = await AdminService.updateBook(bookId, body);
+        const body = await getBody(request);
+        const book = await AdminService.updateBook(bookId, body as unknown as Parameters<typeof AdminService.updateBook>[1]);
         return Response.json(success(book, "Book updated"));
       }
 
@@ -200,8 +217,13 @@ export const apiHandler = enhance(
 
       if (path.match(/^\/admin\/books\/\d+\/stock$/) && method === "PUT") {
         const bookId = Number(path.split("/")[3]);
-        const body = await request.json();
-        const result = await AdminService.updateStock(bookId, body.quantity, body.operatorId, body.remark);
+        const body = await getBody(request);
+        const result = await AdminService.updateStock(
+          bookId, 
+          body.quantity as number, 
+          body.operatorId as number, 
+          body.remark as string
+        );
         return Response.json(success(result, "Stock updated"));
       }
 
@@ -221,8 +243,8 @@ export const apiHandler = enhance(
 
       if (path.match(/^\/admin\/orders\/\d+\/status$/) && method === "PUT") {
         const orderId = Number(path.split("/")[3]);
-        const body = await request.json();
-        const order = await AdminService.updateOrderStatus(orderId, body.status);
+        const body = await getBody(request);
+        const order = await AdminService.updateOrderStatus(orderId, body.status as string);
         return Response.json(success(order, "Order status updated"));
       }
 

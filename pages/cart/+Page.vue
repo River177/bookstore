@@ -3,7 +3,24 @@
   <div>
     <h1 class="text-3xl font-bold mb-8">购物车</h1>
 
-    <div v-if="cartItems.length > 0" class="flex flex-col lg:flex-row gap-8">
+    <!-- Not logged in -->
+    <div v-if="!isLoggedIn" class="text-center py-16">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24 mx-auto text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg>
+      <h2 class="text-2xl font-bold mt-4 text-gray-500">请先登录</h2>
+      <p class="text-gray-400 mt-2">登录后即可查看购物车</p>
+      <a href="/login?redirect=/cart" class="btn btn-primary mt-6">去登录</a>
+    </div>
+
+    <!-- Loading -->
+    <div v-else-if="loading" class="text-center py-16">
+      <span class="loading loading-spinner loading-lg"></span>
+      <p class="mt-4 text-gray-500">加载中...</p>
+    </div>
+
+    <!-- Cart with items -->
+    <div v-else-if="cartItems.length > 0" class="flex flex-col lg:flex-row gap-8">
       <!-- Cart Items -->
       <div class="flex-1">
         <div class="bg-base-100 rounded-box overflow-hidden">
@@ -29,7 +46,7 @@
                       </div>
                     </div>
                     <div>
-                      <div class="font-bold">{{ item.book.title }}</div>
+                      <a :href="`/book/${item.bookId}`" class="font-bold hover:text-primary">{{ item.book.title }}</a>
                       <div class="text-sm text-gray-500">{{ item.book.author }}</div>
                     </div>
                   </div>
@@ -37,14 +54,26 @@
                 <td>¥{{ item.book.price.toFixed(2) }}</td>
                 <td>
                   <div class="flex items-center gap-2">
-                    <button @click="updateQuantity(item.id, item.quantity - 1)" class="btn btn-xs btn-outline">-</button>
+                    <button @click="updateQuantity(item.id, item.quantity - 1)" 
+                            class="btn btn-xs btn-outline"
+                            :disabled="updating">
+                      -
+                    </button>
                     <span class="w-8 text-center">{{ item.quantity }}</span>
-                    <button @click="updateQuantity(item.id, item.quantity + 1)" class="btn btn-xs btn-outline">+</button>
+                    <button @click="updateQuantity(item.id, item.quantity + 1)" 
+                            class="btn btn-xs btn-outline"
+                            :disabled="updating">
+                      +
+                    </button>
                   </div>
                 </td>
                 <td class="font-bold text-primary">¥{{ (item.book.price * item.quantity).toFixed(2) }}</td>
                 <td>
-                  <button @click="removeItem(item.id)" class="btn btn-ghost btn-xs text-error">删除</button>
+                  <button @click="removeItem(item.id)" 
+                          class="btn btn-ghost btn-xs text-error"
+                          :disabled="updating">
+                    删除
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -97,7 +126,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, inject } from "vue";
+import { userState, getUserId, isLoggedIn as checkLoggedIn, fetchCartCount } from "../../lib/stores/userStore";
 
 interface CartItem {
   id: number;
@@ -112,25 +142,48 @@ interface CartItem {
 }
 
 const cartItems = ref<CartItem[]>([]);
-const userId = ref(1); // Demo user ID
+const loading = ref(true);
+const updating = ref(false);
+
+// Get showToast from parent layout
+const showToast = inject<(message: string, type: "success" | "error" | "info") => void>("showToast");
+
+// Check if logged in
+const isLoggedIn = computed(() => checkLoggedIn());
 
 const totalItems = computed(() => cartItems.value.reduce((sum, item) => sum + item.quantity, 0));
 const totalAmount = computed(() => cartItems.value.reduce((sum, item) => sum + item.book.price * item.quantity, 0));
 const finalAmount = computed(() => totalAmount.value >= 49 ? totalAmount.value : totalAmount.value + 6);
 
 onMounted(() => {
-  fetchCart();
+  // Wait a bit for user state to initialize
+  setTimeout(() => {
+    if (isLoggedIn.value) {
+      fetchCart();
+    } else {
+      loading.value = false;
+    }
+  }, 100);
 });
 
 async function fetchCart() {
+  const userId = getUserId();
+  if (!userId) {
+    loading.value = false;
+    return;
+  }
+
   try {
-    const response = await fetch(`/api/cart?userId=${userId.value}`);
+    const response = await fetch(`/api/cart?userId=${userId}`);
     const result = await response.json();
     if (result.success) {
-      cartItems.value = result.data.items;
+      cartItems.value = result.data.items || [];
     }
   } catch (error) {
     console.error("Failed to fetch cart:", error);
+    showToast?.("获取购物车失败", "error");
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -140,32 +193,57 @@ async function updateQuantity(itemId: number, quantity: number) {
     return;
   }
 
+  const userId = getUserId();
+  if (!userId) return;
+
+  updating.value = true;
+
   try {
     const response = await fetch("/api/cart/update", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId: userId.value, itemId, quantity }),
+      body: JSON.stringify({ userId, itemId, quantity }),
     });
     const result = await response.json();
     if (result.success) {
-      cartItems.value = result.data.items;
+      cartItems.value = result.data.items || [];
+      // Update global cart count
+      await fetchCartCount();
+    } else {
+      showToast?.(result.message || "更新失败", "error");
     }
   } catch (error) {
     console.error("Failed to update cart:", error);
+    showToast?.("更新失败", "error");
+  } finally {
+    updating.value = false;
   }
 }
 
 async function removeItem(itemId: number) {
+  const userId = getUserId();
+  if (!userId) return;
+
+  updating.value = true;
+
   try {
-    const response = await fetch(`/api/cart/remove?userId=${userId.value}&itemId=${itemId}`, {
+    const response = await fetch(`/api/cart/remove?userId=${userId}&itemId=${itemId}`, {
       method: "DELETE",
     });
     const result = await response.json();
     if (result.success) {
-      cartItems.value = result.data.items;
+      cartItems.value = result.data.items || [];
+      // Update global cart count
+      await fetchCartCount();
+      showToast?.("已移除商品", "success");
+    } else {
+      showToast?.(result.message || "删除失败", "error");
     }
   } catch (error) {
     console.error("Failed to remove item:", error);
+    showToast?.("删除失败", "error");
+  } finally {
+    updating.value = false;
   }
 }
 </script>

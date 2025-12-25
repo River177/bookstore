@@ -99,7 +99,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { useData } from "vike-vue/useData";
 
 interface Book {
@@ -131,14 +131,16 @@ interface PageData {
 }
 
 const data = useData<PageData>();
-const books = data.books || [];
-const categories = data.categories || [];
-const pagination = data.pagination || { total: 0, page: 1, pageSize: 10, totalPages: 1 };
-const keyword = data.keyword || "";
-const selectedCategory = data.selectedCategory;
+
+// Use computed to make data reactive
+const books = computed(() => data.books || []);
+const categories = computed(() => data.categories || []);
+const pagination = computed(() => data.pagination || { total: 0, page: 1, pageSize: 10, totalPages: 1 });
+const keyword = computed(() => data.keyword || "");
+const selectedCategory = computed(() => data.selectedCategory);
 
 const searchType = ref("keyword");
-const searchValue = ref(keyword);
+const searchValue = ref(keyword.value);
 
 function handleSearch() {
   const params = new URLSearchParams();

@@ -1,5 +1,5 @@
 import type { PageContext } from "vike/types";
-import { AdminService } from "../../../server/services/admin.service";
+import { AdminService } from "../../server/services/admin.service";
 
 export type Data = Awaited<ReturnType<typeof data>>;
 

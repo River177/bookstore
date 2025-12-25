@@ -55,12 +55,20 @@
               <input v-model.number="quantity" type="number" min="1" :max="book.stockQuantity" 
                      class="input input-bordered text-center" />
             </div>
-            <button @click="addToCart" class="btn btn-primary flex-1" :disabled="book.stockQuantity === 0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button @click="handleAddToCart" 
+                    class="btn btn-primary flex-1" 
+                    :disabled="book.stockQuantity === 0 || isLoading"
+                    :class="{ 'loading': isLoading }">
+              <svg v-if="!isLoading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              加入购物车
+              {{ isLoading ? '添加中...' : '加入购物车' }}
             </button>
+          </div>
+          
+          <!-- Login prompt -->
+          <div v-if="!isLoggedIn" class="mt-4 text-sm text-gray-500">
+            <a href="/login" class="link link-primary">登录</a> 后可将商品加入购物车
           </div>
         </div>
 
@@ -81,8 +89,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from "vue";
+import { ref, inject, computed } from "vue";
 import { useData } from "vike-vue/useData";
+import { addToCart, isLoggedIn as checkLoggedIn } from "../../../lib/stores/userStore";
 
 interface Book {
   id: number;
@@ -104,33 +113,38 @@ interface PageData {
 const data = useData<PageData>();
 const book = data.book;
 const quantity = ref(1);
+const isLoading = ref(false);
 
-async function addToCart() {
+// Get showToast from parent layout
+const showToast = inject<(message: string, type: "success" | "error" | "info") => void>("showToast");
+
+// Check if logged in
+const isLoggedIn = computed(() => checkLoggedIn());
+
+async function handleAddToCart() {
   if (!book) return;
   
-  // For demo, using userId=1. In real app, get from auth
-  const userId = 1;
+  if (!isLoggedIn.value) {
+    showToast?.("请先登录后再添加购物车", "error");
+    window.location.href = "/login";
+    return;
+  }
+  
+  isLoading.value = true;
   
   try {
-    const response = await fetch("/api/cart/add", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId,
-        bookId: book.id,
-        quantity: quantity.value,
-      }),
-    });
+    const result = await addToCart(book.id, quantity.value);
     
-    if (response.ok) {
-      alert("已添加到购物车！");
+    if (result.success) {
+      showToast?.(result.message, "success");
     } else {
-      const result = await response.json();
-      alert(result.message || "添加失败");
+      showToast?.(result.message, "error");
     }
   } catch (error) {
     console.error(error);
-    alert("网络错误");
+    showToast?.("网络错误", "error");
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

@@ -11,8 +11,8 @@ export default startApp() as unknown;
 function startApp() {
   const app = express();
 
-  // Parse JSON body
-  app.use(express.json());
+  // Note: Do NOT use express.json() here as it conflicts with universal-middleware
+  // The universal-middleware will handle JSON parsing itself
 
   apply(app, [
     // Append Auth.js session to context
