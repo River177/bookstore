@@ -1,0 +1,120 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main  # 当推送到 main 分支时触发
+  workflow_dispatch:  # 允许手动触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: my-app/package-lock.json
+      
+      - name: 安装 pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+      
+      - name: 安装依赖
+        working-directory: ./my-app
+        run: pnpm install --frozen-lockfile
+      
+      - name: 生成 Prisma Client
+        working-directory: ./my-app
+        run: pnpm prisma:generate
+      
+      - name: 构建项目
+        working-directory: ./my-app
+        run: pnpm build
+      
+      - name: 创建部署包
+        run: |
+          cd my-app
+          mkdir -p ../deploy
+          # 复制必要文件
+          cp -r dist ../deploy/
+          cp -r node_modules ../deploy/
+          cp -r prisma ../deploy/
+          cp package.json ../deploy/
+          cp .env.example ../deploy/.env.example
+          cd ../deploy
+          tar -czf deploy.tar.gz *
+      
+      - name: 部署到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          source: "deploy/deploy.tar.gz"
+          target: "/tmp/"
+          strip_components: 1
+      
+      - name: 执行服务器部署脚本
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ secrets.SERVER_PORT || 22 }}
+          script: |
+            # 设置变量
+            APP_DIR="/var/www/bookstore"
+            BACKUP_DIR="/var/backups/bookstore"
+            
+            # 创建目录
+            mkdir -p $APP_DIR
+            mkdir -p $BACKUP_DIR
+            
+            # 备份当前版本
+            if [ -d "$APP_DIR/dist" ]; then
+              echo "备份当前版本..."
+              BACKUP_FILE="$BACKUP_DIR/backup-$(date +%Y%m%d-%H%M%S).tar.gz"
+              tar -czf $BACKUP_FILE -C $APP_DIR .
+              echo "备份完成: $BACKUP_FILE"
+              
+              # 只保留最近5个备份
+              cd $BACKUP_DIR
+              ls -t backup-*.tar.gz | tail -n +6 | xargs -r rm
+            fi
+            
+            # 解压新版本
+            echo "部署新版本..."
+            cd $APP_DIR
+            tar -xzf /tmp/deploy.tar.gz
+            rm /tmp/deploy.tar.gz
+            
+            # 设置环境变量（如果 .env 不存在）
+            if [ ! -f .env ]; then
+              echo "创建 .env 文件..."
+              cp .env.example .env
+              echo "请手动配置 $APP_DIR/.env 文件"
+            fi
+            
+            # 运行数据库迁移（如果需要）
+            # npm run prisma:push
+            
+            # 重启应用（使用 PM2）
+            echo "重启应用..."
+            if pm2 describe bookstore > /dev/null 2>&1; then
+              pm2 restart bookstore
+            else
+              cd $APP_DIR
+              pm2 start npm --name "bookstore" -- start
+              pm2 save
+            fi
+            
+            echo "部署完成！"
+            pm2 status bookstore

@@ -5,6 +5,7 @@
     "dev": "vike dev",
     "build": "vike build",
     "preview": "vike build && vike preview",
+    "start": "node dist/server/entry.js",
     "lint": "eslint .",
     "prisma:studio": "prisma studio",
     "prisma:generate": "prisma generate",

@@ -1,0 +1,35 @@
+# Caddy 配置文件示例
+your-domain.com {
+    # 反向代理到 Node.js 应用
+    reverse_proxy localhost:3000 {
+        # 设置请求头
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+        header_up X-Forwarded-For {remote}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    # 静态文件处理（如果需要）
+    # 静态资源缓存
+    @static path /static/* /assets/* /images/* /css/* /js/*
+    handle @static {
+        root * /var/www/bookstore/dist/client
+        file_server
+        encode zstd gzip
+        # 缓存静态资源
+        header Cache-Control "public, max-age=31536000"
+    }
+
+    # HTTPS 安全头
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}
+
+# 如果需要多个域名
+# www.your-domain.com {
+#     redir https://your-domain.com{uri}
+# }
