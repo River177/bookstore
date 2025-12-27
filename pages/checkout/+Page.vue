@@ -129,7 +129,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, computed, onMounted } from "vue";
+import { ref, reactive, computed, onMounted, inject } from "vue";
+
+// 注入父组件提供的函数
+const showToast = inject<(message: string, type: 'success' | 'error' | 'info') => void>('showToast')
 
 interface CartItem {
   id: number;
@@ -179,7 +182,7 @@ async function fetchCart() {
 
 async function submitOrder() {
   if (!form.receiverName || !form.phone || !form.address) {
-    alert("请填写完整的收货信息");
+    showToast?.("请填写完整的收货信息", "error");
     return;
   }
 
@@ -200,14 +203,29 @@ async function submitOrder() {
     const result = await response.json();
 
     if (result.success) {
-      alert("订单提交成功！订单号: " + result.data.id);
-      window.location.href = "/";
+      // 模拟支付成功，自动更新订单状态为已付款
+      const orderId = result.data.id;
+      
+      // 更新订单状态
+      try {
+        await fetch(`/api/orders/${orderId}/pay`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' }
+        });
+      } catch (err) {
+        console.error('Failed to update order status:', err);
+      }
+      
+      showToast?.("订单提交成功！订单号: " + orderId + "\n\n支付信息已确认，订单已付款！", "success");
+      setTimeout(() => {
+        window.location.href = "/orders";
+      }, 1500);
     } else {
-      alert(result.message || "订单提交失败");
+      showToast?.(result.message || "订单提交失败", "error");
     }
   } catch (error) {
     console.error("Failed to submit order:", error);
-    alert("网络错误，请重试");
+    showToast?.("网络错误，请重试", "error");
   } finally {
     loading.value = false;
   }

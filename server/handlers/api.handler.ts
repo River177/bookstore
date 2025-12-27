@@ -124,8 +124,13 @@ export const apiHandler = enhance(
         const userId = Number(url.searchParams.get("userId"));
         const page = Number(url.searchParams.get("page")) || 1;
         const pageSize = Number(url.searchParams.get("pageSize")) || 10;
-        const orders = await OrderService.getUserOrders(userId, page, pageSize);
-        return Response.json(orders);
+        
+        if (!userId) {
+          return Response.json(error("User ID required"), { status: 400 });
+        }
+        
+        const result = await OrderService.getUserOrders(userId, page, pageSize);
+        return Response.json(success({ orders: result.data, pagination: result.pagination }));
       }
 
       if (path === "/orders" && method === "POST") {
@@ -142,6 +147,33 @@ export const apiHandler = enhance(
           return Response.json(error("Order not found"), { status: 404 });
         }
         return Response.json(success(order));
+      }
+
+      // Order payment (update status to paid)
+      if (path.match(/^\/orders\/\d+\/pay$/) && method === "PUT") {
+        const orderId = Number(path.split("/")[2]);
+        const order = await OrderService.updateOrderStatus(orderId, "paid");
+        return Response.json(success(order, "Payment confirmed"));
+      }
+
+      // Order confirm delivery (update status to delivered)
+      if (path.match(/^\/orders\/\d+\/confirm$/) && method === "PUT") {
+        const orderId = Number(path.split("/")[2]);
+        const body = await getBody(request);
+        const userId = body.userId as number;
+        
+        // Verify the order belongs to the user
+        const order = await OrderService.getOrderById(orderId, userId);
+        if (!order) {
+          return Response.json(error("Order not found or access denied"), { status: 404 });
+        }
+        
+        if (order.status !== "shipped") {
+          return Response.json(error("Only shipped orders can be confirmed"), { status: 400 });
+        }
+        
+        const updatedOrder = await OrderService.updateOrderStatus(orderId, "delivered");
+        return Response.json(success(updatedOrder, "Order confirmed successfully"));
       }
 
       // ==========================================
@@ -179,7 +211,12 @@ export const apiHandler = enhance(
       if (path.match(/^\/admin\/users\/\d+\/status$/) && method === "PUT") {
         const userId = Number(path.split("/")[3]);
         const body = await getBody(request);
-        const user = await AdminService.updateUserStatus(userId, body.status as number);
+        const user = await AdminService.updateUserStatus(
+          userId, 
+          body.status as number,
+          body.adminId as number,
+          body.adminName as string
+        );
         return Response.json(success(user, "User status updated"));
       }
 
@@ -198,20 +235,33 @@ export const apiHandler = enhance(
 
       if (path === "/admin/books" && method === "POST") {
         const body = await getBody(request);
-        const book = await AdminService.createBook(body as unknown as Parameters<typeof AdminService.createBook>[0]);
+        const { adminId, adminName, ...bookData } = body as Record<string, unknown>;
+        const book = await AdminService.createBook(
+          bookData as Parameters<typeof AdminService.createBook>[0],
+          adminId as number,
+          adminName as string
+        );
         return Response.json(success(book, "Book created"));
       }
 
       if (path.match(/^\/admin\/books\/\d+$/) && method === "PUT") {
         const bookId = Number(path.split("/")[3]);
         const body = await getBody(request);
-        const book = await AdminService.updateBook(bookId, body as unknown as Parameters<typeof AdminService.updateBook>[1]);
+        const { adminId, adminName, ...bookData } = body as Record<string, unknown>;
+        const book = await AdminService.updateBook(
+          bookId, 
+          bookData as Parameters<typeof AdminService.updateBook>[1],
+          adminId as number,
+          adminName as string
+        );
         return Response.json(success(book, "Book updated"));
       }
 
       if (path.match(/^\/admin\/books\/\d+$/) && method === "DELETE") {
         const bookId = Number(path.split("/")[3]);
-        await AdminService.deleteBook(bookId);
+        const adminId = Number(url.searchParams.get("adminId"));
+        const adminName = url.searchParams.get("adminName") || undefined;
+        await AdminService.deleteBook(bookId, adminId, adminName);
         return Response.json(success(null, "Book deleted"));
       }
 
@@ -222,7 +272,8 @@ export const apiHandler = enhance(
           bookId, 
           body.quantity as number, 
           body.operatorId as number, 
-          body.remark as string
+          body.remark as string,
+          body.adminName as string
         );
         return Response.json(success(result, "Stock updated"));
       }
@@ -244,7 +295,12 @@ export const apiHandler = enhance(
       if (path.match(/^\/admin\/orders\/\d+\/status$/) && method === "PUT") {
         const orderId = Number(path.split("/")[3]);
         const body = await getBody(request);
-        const order = await AdminService.updateOrderStatus(orderId, body.status as string);
+        const order = await AdminService.updateOrderStatus(
+          orderId, 
+          body.status as string,
+          body.adminId as number,
+          body.adminName as string
+        );
         return Response.json(success(order, "Order status updated"));
       }
 

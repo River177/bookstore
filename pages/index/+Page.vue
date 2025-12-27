@@ -2,7 +2,7 @@
 <template>
   <div>
     <!-- Hero Section -->
-    <div class="hero min-h-[60vh] bg-base-100 rounded-box mb-8">
+    <div class="hero min-h-[40vh] bg-base-100 rounded-box mb-8">
       <div class="hero-content text-center">
         <div class="max-w-md">
           <h1 class="text-5xl font-bold">欢迎来到网上书店</h1>

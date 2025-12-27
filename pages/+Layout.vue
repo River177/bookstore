@@ -8,6 +8,18 @@
       </div>
     </div>
 
+    <!-- Confirm Dialog -->
+    <div v-if="confirmDialog.show" class="modal modal-open">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg">{{ confirmDialog.title }}</h3>
+        <p class="py-4">{{ confirmDialog.message }}</p>
+        <div class="modal-action">
+          <button class="btn btn-ghost" @click="handleConfirmCancel">取消</button>
+          <button class="btn btn-primary" @click="handleConfirmOk">确认</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Navbar -->
     <div class="navbar bg-base-100 shadow-lg sticky top-0 z-50">
       <div class="navbar-start">
@@ -20,6 +32,7 @@
           <ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
             <li><a href="/">首页</a></li>
             <li><a href="/search">搜索图书</a></li>
+            <li v-if="userState.user"><a href="/orders">我的订单</a></li>
             <li v-if="userState.admin"><a href="/admin" class="text-secondary">管理后台</a></li>
           </ul>
         </div>
@@ -34,6 +47,15 @@
         <ul class="menu menu-horizontal px-1">
           <li><a href="/" class="hover:text-primary">首页</a></li>
           <li><a href="/search" class="hover:text-primary">搜索图书</a></li>
+          <!-- User orders menu item - visible only to logged-in users -->
+          <li v-if="userState.user">
+            <a href="/orders" class="hover:text-primary">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              我的订单
+            </a>
+          </li>
           <!-- Admin menu item - visible only to admins -->
           <li v-if="userState.admin">
             <a href="/admin" class="text-secondary font-semibold hover:bg-secondary hover:text-secondary-content">
@@ -152,8 +174,42 @@ function showToast(message: string, type: "success" | "error" | "info" = "info")
   }, 3000);
 }
 
-// Provide toast function to child components
+// Confirm dialog
+const confirmDialog = reactive({
+  show: false,
+  title: "确认",
+  message: "",
+  resolve: null as ((value: boolean) => void) | null,
+});
+
+function showConfirm(message: string, title: string = "确认"): Promise<boolean> {
+  return new Promise((resolve) => {
+    confirmDialog.title = title;
+    confirmDialog.message = message;
+    confirmDialog.resolve = resolve;
+    confirmDialog.show = true;
+  });
+}
+
+function handleConfirmOk() {
+  confirmDialog.show = false;
+  if (confirmDialog.resolve) {
+    confirmDialog.resolve(true);
+    confirmDialog.resolve = null;
+  }
+}
+
+function handleConfirmCancel() {
+  confirmDialog.show = false;
+  if (confirmDialog.resolve) {
+    confirmDialog.resolve(false);
+    confirmDialog.resolve = null;
+  }
+}
+
+// Provide functions to child components
 provide("showToast", showToast);
+provide("showConfirm", showConfirm);
 
 // Initialize user store on mount
 onMounted(() => {

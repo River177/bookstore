@@ -1,6 +1,11 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, inject } from 'vue'
 import AdminLayout from '../../../components/AdminLayout.vue'
+import { getAdmin } from '../../../lib/stores/userStore'
+
+// 注入父组件提供的函数
+const showToast = inject<(message: string, type: 'success' | 'error' | 'info') => void>('showToast')
+const showConfirm = inject<(message: string, title?: string) => Promise<boolean>>('showConfirm')
 
 interface Category {
   id: number
@@ -36,6 +41,8 @@ const categoryFilter = ref<number | undefined>(undefined)
 const showModal = ref(false)
 const modalMode = ref<'create' | 'edit'>('create')
 const formData = ref<Partial<Book>>({})
+const showStockModal = ref(false)
+const stockFormData = ref({ bookId: 0, bookTitle: '', currentStock: 0, quantity: 0, remark: '' })
 
 const fetchBooks = async () => {
   loading.value = true
@@ -83,6 +90,7 @@ const openEditModal = (book: Book) => {
 
 const saveBook = async () => {
   try {
+    const admin = getAdmin()
     const url = modalMode.value === 'create' 
       ? '/api/admin/books' 
       : `/api/admin/books/${formData.value.id}`
@@ -91,7 +99,11 @@ const saveBook = async () => {
     await fetch(url, {
       method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData.value)
+      body: JSON.stringify({
+        ...formData.value,
+        adminId: admin?.id,
+        adminName: admin?.fullName || admin?.username
+      })
     })
     
     showModal.value = false
@@ -102,9 +114,15 @@ const saveBook = async () => {
 }
 
 const deleteBook = async (id: number) => {
-  if (!confirm('确定要删除这本图书吗？')) return
+  const confirmed = await showConfirm?.('确定要删除这本图书吗？', '删除确认')
+  if (!confirmed) return
   try {
-    await fetch(`/api/admin/books/${id}`, { method: 'DELETE' })
+    const admin = getAdmin()
+    const params = new URLSearchParams({
+      adminId: String(admin?.id || ''),
+      adminName: admin?.fullName || admin?.username || ''
+    })
+    await fetch(`/api/admin/books/${id}?${params}`, { method: 'DELETE' })
     await fetchBooks()
   } catch (error) {
     console.error('Failed to delete book:', error)
@@ -112,21 +130,44 @@ const deleteBook = async (id: number) => {
 }
 
 const updateStock = async (bookId: number, quantity: number) => {
-  const input = prompt(`输入库存变动数量（正数增加，负数减少）：`, '0')
-  if (!input) return
-  const change = parseInt(input)
-  if (isNaN(change)) return
-  
+  // 不再使用 prompt，而是打开模态框
+  // 这个函数现在从模态框调用
   try {
+    const admin = getAdmin()
     await fetch(`/api/admin/books/${bookId}/stock`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: change, remark: '手动调整库存' })
+      body: JSON.stringify({ 
+        quantity, 
+        operatorId: admin?.id,
+        remark: stockFormData.value.remark || '手动调整库存',
+        adminName: admin?.fullName || admin?.username
+      })
     })
     await fetchBooks()
+    showStockModal.value = false
   } catch (error) {
     console.error('Failed to update stock:', error)
   }
+}
+
+const openStockModal = (book: Book) => {
+  stockFormData.value = {
+    bookId: book.id,
+    bookTitle: book.title,
+    currentStock: book.stockQuantity,
+    quantity: 0,
+    remark: ''
+  }
+  showStockModal.value = true
+}
+
+const confirmStockUpdate = async () => {
+  if (stockFormData.value.quantity === 0) {
+    showToast?.('请输入库存变动数量', 'error')
+    return
+  }
+  await updateStock(stockFormData.value.bookId, stockFormData.value.quantity)
 }
 
 const formatCurrency = (amount: number) => {
@@ -254,7 +295,7 @@ const handleSearch = () => {
                   <td>
                     <div class="flex gap-1">
                       <button @click="openEditModal(book)" class="btn btn-ghost btn-xs">编辑</button>
-                      <button @click="updateStock(book.id, book.stockQuantity)" class="btn btn-ghost btn-xs">库存</button>
+                      <button @click="openStockModal(book)" class="btn btn-ghost btn-xs">库存</button>
                       <button @click="deleteBook(book.id)" class="btn btn-ghost btn-xs text-error">删除</button>
                     </div>
                   </td>
@@ -339,6 +380,60 @@ const handleSearch = () => {
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click="showModal = false">close</button>
+      </form>
+    </dialog>
+
+    <!-- Stock Update Modal -->
+    <dialog :class="['modal', { 'modal-open': showStockModal }]">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">调整库存</h3>
+        
+        <div class="space-y-4">
+          <div class="alert alert-info">
+            <div>
+              <div class="font-medium">{{ stockFormData.bookTitle }}</div>
+              <div class="text-sm">当前库存: {{ stockFormData.currentStock }}</div>
+            </div>
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">库存变动数量 *</span>
+              <span class="label-text-alt text-base-content/60">正数增加，负数减少</span>
+            </label>
+            <input 
+              v-model.number="stockFormData.quantity" 
+              type="number" 
+              class="input input-bordered" 
+              placeholder="例如: +10 或 -5"
+            />
+          </div>
+
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text">备注</span>
+            </label>
+            <textarea 
+              v-model="stockFormData.remark" 
+              class="textarea textarea-bordered" 
+              placeholder="请输入调整原因"
+            ></textarea>
+          </div>
+
+          <div v-if="stockFormData.quantity !== 0" class="alert">
+            <div>
+              <div class="text-sm">调整后库存: <span class="font-bold">{{ stockFormData.currentStock + stockFormData.quantity }}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-action">
+          <button @click="showStockModal = false" class="btn btn-ghost">取消</button>
+          <button @click="confirmStockUpdate" class="btn btn-primary">确认</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button @click="showStockModal = false">close</button>
       </form>
     </dialog>
   </AdminLayout>

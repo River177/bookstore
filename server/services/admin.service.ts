@@ -286,11 +286,26 @@ export class AdminService {
   /**
    * 更新用户状态
    */
-  static async updateUserStatus(userId: number, status: number) {
-    return prisma.user.update({
+  static async updateUserStatus(userId: number, status: number, adminId?: number, adminName?: string) {
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const result = await prisma.user.update({
       where: { id: userId },
       data: { status }
     });
+
+    // 记录操作日志
+    await this.logOperation({
+      adminId,
+      adminName,
+      module: 'user',
+      action: 'update_status',
+      targetType: 'User',
+      targetId: userId,
+      content: `更新用户 ${user?.username || userId} 状态为 ${status === 1 ? '启用' : '禁用'}`,
+      status: 1
+    });
+
+    return result;
   }
 
   /**
@@ -351,11 +366,38 @@ export class AdminService {
   /**
    * 更新订单状态
    */
-  static async updateOrderStatus(orderId: number, status: string) {
-    return prisma.order.update({
+  static async updateOrderStatus(orderId: number, status: string, adminId?: number, adminName?: string) {
+    const order = await prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: { user: { select: { username: true } } }
+    });
+    
+    const result = await prisma.order.update({
       where: { id: orderId },
       data: { status }
     });
+
+    // 记录操作日志
+    const statusMap: Record<string, string> = {
+      pending: '待支付',
+      paid: '已支付',
+      shipped: '已发货',
+      delivered: '已送达',
+      cancelled: '已取消'
+    };
+
+    await this.logOperation({
+      adminId,
+      adminName,
+      module: 'order',
+      action: 'update_status',
+      targetType: 'Order',
+      targetId: orderId,
+      content: `更新订单 #${orderId} (用户: ${order?.user?.username || 'unknown'}) 状态: ${order?.status ? statusMap[order.status] : ''} → ${statusMap[status] || status}`,
+      status: 1
+    });
+
+    return result;
   }
 
   /**
@@ -418,8 +460,22 @@ export class AdminService {
     description?: string;
     coverImage?: string;
     categoryId?: number;
-  }) {
-    return prisma.book.create({ data });
+  }, adminId?: number, adminName?: string) {
+    const result = await prisma.book.create({ data });
+
+    // 记录操作日志
+    await this.logOperation({
+      adminId,
+      adminName,
+      module: 'book',
+      action: 'create',
+      targetType: 'Book',
+      targetId: result.id,
+      content: `创建图书: ${data.title} (ISBN: ${data.isbn})`,
+      status: 1
+    });
+
+    return result;
   }
 
   /**
@@ -436,24 +492,59 @@ export class AdminService {
     coverImage?: string;
     categoryId?: number;
     status?: number;
-  }) {
-    return prisma.book.update({
+  }, adminId?: number, adminName?: string) {
+    const book = await prisma.book.findUnique({ where: { id: bookId } });
+    const result = await prisma.book.update({
       where: { id: bookId },
       data
     });
+
+    // 记录操作日志
+    const changes = [];
+    if (data.title) changes.push(`标题: ${data.title}`);
+    if (data.price) changes.push(`价格: ${data.price}`);
+    if (data.status !== undefined) changes.push(`状态: ${data.status === 1 ? '上架' : '下架'}`);
+    
+    await this.logOperation({
+      adminId,
+      adminName,
+      module: 'book',
+      action: 'update',
+      targetType: 'Book',
+      targetId: bookId,
+      content: `更新图书: ${book?.title || bookId}${changes.length > 0 ? ` (${changes.join(', ')})` : ''}`,
+      status: 1
+    });
+
+    return result;
   }
 
   /**
    * 删除图书
    */
-  static async deleteBook(bookId: number) {
-    return prisma.book.delete({ where: { id: bookId } });
+  static async deleteBook(bookId: number, adminId?: number, adminName?: string) {
+    const book = await prisma.book.findUnique({ where: { id: bookId } });
+    const result = await prisma.book.delete({ where: { id: bookId } });
+
+    // 记录操作日志
+    await this.logOperation({
+      adminId,
+      adminName,
+      module: 'book',
+      action: 'delete',
+      targetType: 'Book',
+      targetId: bookId,
+      content: `删除图书: ${book?.title || bookId} (ISBN: ${book?.isbn || 'N/A'})`,
+      status: 1
+    });
+
+    return result;
   }
 
   /**
    * 更新库存
    */
-  static async updateStock(bookId: number, quantity: number, operatorId?: number, remark?: string) {
+  static async updateStock(bookId: number, quantity: number, operatorId?: number, remark?: string, adminName?: string) {
     const book = await prisma.book.findUnique({ where: { id: bookId } });
     if (!book) throw new Error("Book not found");
 
@@ -478,6 +569,18 @@ export class AdminService {
         }
       })
     ]);
+
+    // 记录操作日志
+    await this.logOperation({
+      adminId: operatorId,
+      adminName,
+      module: 'book',
+      action: 'update_stock',
+      targetType: 'Book',
+      targetId: bookId,
+      content: `调整图书 "${book.title}" 库存: ${beforeQuantity} → ${afterQuantity} (${quantity > 0 ? '+' : ''}${quantity})${remark ? ` - ${remark}` : ''}`,
+      status: 1
+    });
 
     return { beforeQuantity, afterQuantity };
   }

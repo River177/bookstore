@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '../../../components/AdminLayout.vue'
+import { getAdmin } from '../../../lib/stores/userStore'
 
 interface OrderItem {
   id: number
@@ -30,6 +31,9 @@ const totalPages = ref(0)
 const statusFilter = ref('')
 const selectedOrder = ref<Order | null>(null)
 const showDetail = ref(false)
+const showStatusModal = ref(false)
+const statusToUpdate = ref('')
+const orderIdToUpdate = ref(0)
 
 const statusOptions = [
   { value: '', label: '全部' },
@@ -71,18 +75,35 @@ const fetchOrders = async () => {
 
 const updateOrderStatus = async (orderId: number, status: string) => {
   try {
+    const admin = getAdmin()
     await fetch(`/api/admin/orders/${orderId}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ 
+        status,
+        adminId: admin?.id,
+        adminName: admin?.fullName || admin?.username
+      })
     })
     await fetchOrders()
     if (selectedOrder.value?.id === orderId) {
       selectedOrder.value = { ...selectedOrder.value, status }
     }
+    showStatusModal.value = false
   } catch (error) {
     console.error('Failed to update order status:', error)
   }
+}
+
+const openStatusModal = (orderId: number, currentStatus: string) => {
+  orderIdToUpdate.value = orderId
+  statusToUpdate.value = currentStatus
+  showStatusModal.value = true
+}
+
+const confirmStatusUpdate = async () => {
+  if (!statusToUpdate.value) return
+  await updateOrderStatus(orderIdToUpdate.value, statusToUpdate.value)
 }
 
 const openDetail = (order: Order) => {
@@ -187,19 +208,7 @@ watch([page, statusFilter], fetchOrders)
                   <td>
                     <div class="flex gap-1">
                       <button @click="openDetail(order)" class="btn btn-ghost btn-xs">详情</button>
-                      <div class="dropdown dropdown-end">
-                        <label tabindex="0" class="btn btn-ghost btn-xs">状态 ▼</label>
-                        <ul tabindex="0" class="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-40">
-                          <li v-for="opt in statusOptions.slice(1)" :key="opt.value">
-                            <a 
-                              @click="updateOrderStatus(order.id, opt.value)"
-                              :class="{ 'font-bold': order.status === opt.value }"
-                            >
-                              {{ opt.label }}
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
+                      <button @click="openStatusModal(order.id, order.status)" class="btn btn-ghost btn-xs">状态 ▼</button>
                     </div>
                   </td>
                 </tr>
@@ -330,6 +339,32 @@ watch([page, statusFilter], fetchOrders)
       </div>
       <form method="dialog" class="modal-backdrop">
         <button @click="showDetail = false">close</button>
+      </form>
+    </dialog>
+
+    <!-- Status Update Modal -->
+    <dialog :class="['modal', { 'modal-open': showStatusModal }]">
+      <div class="modal-box">
+        <h3 class="font-bold text-lg mb-4">更新订单状态</h3>
+        
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">选择新状态</span>
+          </label>
+          <select v-model="statusToUpdate" class="select select-bordered">
+            <option v-for="opt in statusOptions.slice(1)" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="modal-action">
+          <button @click="showStatusModal = false" class="btn btn-ghost">取消</button>
+          <button @click="confirmStatusUpdate" class="btn btn-primary">确认</button>
+        </div>
+      </div>
+      <form method="dialog" class="modal-backdrop">
+        <button @click="showStatusModal = false">close</button>
       </form>
     </dialog>
   </AdminLayout>

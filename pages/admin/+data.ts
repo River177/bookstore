@@ -6,7 +6,34 @@ export type Data = Awaited<ReturnType<typeof data>>;
 export const data = async (_pageContext: PageContext) => {
   try {
     const stats = await AdminService.getDashboardStats();
-    return { stats };
+    // 确保返回的数据是可序列化的纯对象，将Date转换为字符串
+    return { 
+      stats: {
+        totalUsers: stats.totalUsers,
+        totalBooks: stats.totalBooks,
+        totalOrders: stats.totalOrders,
+        todayOrders: stats.todayOrders,
+        monthlyRevenue: Number(stats.monthlyRevenue),
+        pendingOrders: stats.pendingOrders,
+        lowStockBooks: stats.lowStockBooks,
+        recentOrders: stats.recentOrders.map((order) => ({
+          id: order.id,
+          userId: order.userId,
+          totalAmount: Number(order.totalAmount),
+          status: order.status,
+          shippingAddress: order.shippingAddress,
+          orderDate: order.orderDate.toISOString(),
+          user: order.user,
+          items: order.items.map((item) => ({
+            id: item.id,
+            bookId: item.bookId,
+            quantity: item.quantity,
+            unitPrice: Number(item.unitPrice),
+            book: item.book
+          }))
+        }))
+      }
+    };
   } catch (error) {
     console.error("Dashboard data error:", error);
     return {

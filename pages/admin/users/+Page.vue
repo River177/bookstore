@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '../../../components/AdminLayout.vue'
+import { getAdmin } from '../../../lib/stores/userStore'
 
 interface User {
   id: number
@@ -48,10 +49,15 @@ const fetchUsers = async () => {
 
 const updateStatus = async (userId: number, status: number) => {
   try {
+    const admin = getAdmin()
     await fetch(`/api/admin/users/${userId}/status`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status })
+      body: JSON.stringify({ 
+        status,
+        adminId: admin?.id,
+        adminName: admin?.fullName || admin?.username
+      })
     })
     await fetchUsers()
   } catch (error) {

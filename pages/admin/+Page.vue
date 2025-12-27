@@ -111,7 +111,7 @@ const orderStatusMap: Record<string, { label: string; class: string }> = {
               <a href="/admin/users" class="btn btn-outline btn-accent">
                 👥 用户管理
               </a>
-              <a href="/admin/logs" class="btn btn-outline">
+              <a href="/admin/operations" class="btn btn-outline">
                 📝 操作日志
               </a>
             </div>
