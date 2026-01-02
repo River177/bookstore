@@ -21,34 +21,32 @@ async function getBody(request: Request): Promise<Record<string, unknown>> {
  */
 export const apiHandler = enhance(
   async (request, context, runtime) => {
-    // Debug: Log the request URL
-    console.log("Request URL:", request.url);
-    console.log("Runtime platform:", runtime?.platform);
+    // Get the Express request object from runtime
+    const expressReq = (runtime as any)?.req;
+    console.log("Express req exists:", !!expressReq);
+    console.log("Express query:", expressReq?.query);
+    console.log("Express originalUrl:", expressReq?.originalUrl);
     
-    // Handle both absolute and relative URLs
-    let url: URL;
-    try {
-      url = new URL(request.url);
-    } catch {
-      // If request.url is relative, construct absolute URL
-      const baseUrl = request.headers.get('host') 
-        ? `https://${request.headers.get('host')}`
-        : 'http://localhost:3000';
-      url = new URL(request.url, baseUrl);
-    }
+    // Construct URL with query parameters from Express request
+    const baseUrl = request.headers.get('host') 
+      ? `https://${request.headers.get('host')}`
+      : 'http://localhost:3000';
     
-    const path = url.pathname.replace("/api", "");
+    // Use Express originalUrl if available (includes query string)
+    const fullUrl = expressReq?.originalUrl 
+      ? new URL(expressReq.originalUrl, baseUrl)
+      : new URL(request.url, baseUrl);
+    
+    console.log("Full URL:", fullUrl.toString());
+    console.log("Search params:", fullUrl.search);
+    
+    const path = fullUrl.pathname.replace("/api", "");
     const method = request.method;
-
-    // Debug: Log parsed URL details
-    console.log("Parsed path:", path);
-    console.log("Search params:", url.search);
-    console.log("Search params entries:", Array.from(url.searchParams.entries()));
 
     try {
       // Books API
       if (path === "/books" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await BookService.searchBooks({
           keyword: params.keyword,
           categoryId: params.categoryId ? Number(params.categoryId) : undefined,
@@ -77,7 +75,7 @@ export const apiHandler = enhance(
 
       // Featured books
       if (path === "/books/featured" && method === "GET") {
-        const limit = url.searchParams.get("limit");
+        const limit = fullUrl.searchParams.get("limit");
         const books = await BookService.getFeaturedBooks(limit ? Number(limit) : 8);
         return Response.json(success(books));
       }
@@ -104,7 +102,7 @@ export const apiHandler = enhance(
 
       // Cart API (requires auth - simplified for demo)
       if (path === "/cart" && method === "GET") {
-        const userId = Number(url.searchParams.get("userId"));
+        const userId = Number(fullUrl.searchParams.get("userId"));
         if (!userId) {
           return Response.json(error("User ID required"), { status: 400 });
         }
@@ -133,17 +131,17 @@ export const apiHandler = enhance(
       }
 
       if (path === "/cart/remove" && method === "DELETE") {
-        const userId = Number(url.searchParams.get("userId"));
-        const itemId = Number(url.searchParams.get("itemId"));
+        const userId = Number(fullUrl.searchParams.get("userId"));
+        const itemId = Number(fullUrl.searchParams.get("itemId"));
         const cart = await CartService.removeItem(userId, itemId);
         return Response.json(success(cart, "Item removed"));
       }
 
       // Orders API
       if (path === "/orders" && method === "GET") {
-        const userId = Number(url.searchParams.get("userId"));
-        const page = Number(url.searchParams.get("page")) || 1;
-        const pageSize = Number(url.searchParams.get("pageSize")) || 10;
+        const userId = Number(fullUrl.searchParams.get("userId"));
+        const page = Number(fullUrl.searchParams.get("page")) || 1;
+        const pageSize = Number(fullUrl.searchParams.get("pageSize")) || 10;
         
         if (!userId) {
           return Response.json(error("User ID required"), { status: 400 });
@@ -161,7 +159,7 @@ export const apiHandler = enhance(
 
       if (path.startsWith("/orders/") && method === "GET") {
         const id = Number(path.split("/")[2]);
-        const userId = url.searchParams.get("userId");
+        const userId = fullUrl.searchParams.get("userId");
         const order = await OrderService.getOrderById(id, userId ? Number(userId) : undefined);
         if (!order) {
           return Response.json(error("Order not found"), { status: 404 });
@@ -218,7 +216,7 @@ export const apiHandler = enhance(
 
       // Admin - Users management
       if (path === "/admin/users" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await AdminService.getUsers({
           page: params.page ? Number(params.page) : 1,
           pageSize: params.pageSize ? Number(params.pageSize) : 10,
@@ -242,7 +240,7 @@ export const apiHandler = enhance(
 
       // Admin - Books management
       if (path === "/admin/books" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await AdminService.getBooks({
           page: params.page ? Number(params.page) : 1,
           pageSize: params.pageSize ? Number(params.pageSize) : 10,
@@ -279,8 +277,8 @@ export const apiHandler = enhance(
 
       if (path.match(/^\/admin\/books\/\d+$/) && method === "DELETE") {
         const bookId = Number(path.split("/")[3]);
-        const adminId = Number(url.searchParams.get("adminId"));
-        const adminName = url.searchParams.get("adminName") || undefined;
+        const adminId = Number(fullUrl.searchParams.get("adminId"));
+        const adminName = fullUrl.searchParams.get("adminName") || undefined;
         await AdminService.deleteBook(bookId, adminId, adminName);
         return Response.json(success(null, "Book deleted"));
       }
@@ -300,7 +298,7 @@ export const apiHandler = enhance(
 
       // Admin - Orders management
       if (path === "/admin/orders" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await AdminService.getOrders({
           page: params.page ? Number(params.page) : 1,
           pageSize: params.pageSize ? Number(params.pageSize) : 10,
@@ -326,7 +324,7 @@ export const apiHandler = enhance(
 
       // Admin - Operation logs
       if (path === "/admin/logs" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await AdminService.getOperationLogs({
           page: params.page ? Number(params.page) : 1,
           pageSize: params.pageSize ? Number(params.pageSize) : 20,
@@ -341,7 +339,7 @@ export const apiHandler = enhance(
 
       // Admin - Stock logs
       if (path === "/admin/stock-logs" && method === "GET") {
-        const params = Object.fromEntries(url.searchParams);
+        const params = Object.fromEntries(fullUrl.searchParams);
         const result = await AdminService.getStockLogs(
           params.bookId ? Number(params.bookId) : undefined,
           params.page ? Number(params.page) : 1,
