@@ -1,6 +1,11 @@
 {
   "buildCommand": "pnpm run build",
   "installCommand": "pnpm install --no-frozen-lockfile && pnpm prisma generate",
-  "devCommand": "pnpm run dev"
+  "devCommand": "pnpm run dev",
+  "functions": {
+    "**/__vike/**/*.func/**": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }
 
