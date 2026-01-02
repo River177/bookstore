@@ -1,4 +1,7 @@
 // server/entry.ts - Server Entry Point
+// Apply Vercel fetch polyfill first before any other imports
+import "./vercel-fetch-polyfill";
+
 import { authjsHandler, authjsSessionMiddleware } from "./authjs-handler";
 import { apiHandler } from "./handlers/api.handler";
 import { apply, serve } from "@photonjs/express";
