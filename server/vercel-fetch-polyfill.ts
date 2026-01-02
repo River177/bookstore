@@ -1,6 +1,9 @@
-// Polyfill for Vercel's Node.js runtime to automatically add duplex option to Request
-// This fixes the "RequestInit: duplex option is required when sending a body" error
+// Polyfills for Vercel's Node.js runtime
 
+// Make this a module
+export {};
+
+// 1. Fix "RequestInit: duplex option is required when sending a body" error
 const originalRequest = globalThis.Request;
 
 if (originalRequest) {
@@ -15,5 +18,20 @@ if (originalRequest) {
       }
     }
   } as typeof originalRequest;
+}
+
+// 2. Fix BigInt serialization error
+// PostgreSQL bigint types are mapped to JavaScript BigInt, which can't be serialized to JSON
+// Add toJSON method to BigInt prototype to convert to Number
+declare global {
+  interface BigInt {
+    toJSON(): number;
+  }
+}
+
+if (!(BigInt.prototype as any).toJSON) {
+  (BigInt.prototype as any).toJSON = function() {
+    return Number(this);
+  };
 }
 
