@@ -19,6 +19,7 @@
     "@photonjs/vercel": "^0.1.21",
     "@prisma/adapter-pg": "^7.1.0",
     "@prisma/client": "^7.1.0",
+    "@prisma/client-runtime-utils": "^7.1.0",
     "@universal-middleware/core": "^0.4.13",
     "bcryptjs": "^2.4.3",
     "dotenv": "^17.2.3",
