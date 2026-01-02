@@ -20,10 +20,30 @@ async function getBody(request: Request): Promise<Record<string, unknown>> {
  * API Router Handler
  */
 export const apiHandler = enhance(
-  async (request) => {
-    const url = new URL(request.url);
+  async (request, context, runtime) => {
+    // Debug: Log the request URL
+    console.log("Request URL:", request.url);
+    console.log("Runtime platform:", runtime?.platform);
+    
+    // Handle both absolute and relative URLs
+    let url: URL;
+    try {
+      url = new URL(request.url);
+    } catch {
+      // If request.url is relative, construct absolute URL
+      const baseUrl = request.headers.get('host') 
+        ? `https://${request.headers.get('host')}`
+        : 'http://localhost:3000';
+      url = new URL(request.url, baseUrl);
+    }
+    
     const path = url.pathname.replace("/api", "");
     const method = request.method;
+
+    // Debug: Log parsed URL details
+    console.log("Parsed path:", path);
+    console.log("Search params:", url.search);
+    console.log("Search params entries:", Array.from(url.searchParams.entries()));
 
     try {
       // Books API
