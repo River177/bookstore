@@ -234,7 +234,8 @@ async function submitOrder() {
         userId: userId,
         shippingAddress,
       }),
-    });
+      duplex: "half",
+    } as RequestInit);
 
     const result = await response.json();
 
@@ -246,8 +247,9 @@ async function submitOrder() {
       try {
         await fetch(`/api/orders/${orderId}/pay`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' }
-        });
+          headers: { 'Content-Type': 'application/json' },
+          duplex: 'half',
+        } as RequestInit);
       } catch (err) {
         console.error('Failed to update order status:', err);
       }

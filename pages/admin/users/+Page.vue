@@ -57,8 +57,9 @@ const updateStatus = async (userId: number, status: number) => {
         status,
         adminId: admin?.id,
         adminName: admin?.fullName || admin?.username
-      })
-    })
+      }),
+      duplex: 'half',
+    } as RequestInit)
     await fetchUsers()
   } catch (error) {
     console.error('Failed to update status:', error)

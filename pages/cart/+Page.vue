@@ -210,7 +210,8 @@ async function updateQuantity(itemId: number, quantity: number) {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ userId, itemId, quantity }),
-    });
+      duplex: "half",
+    } as RequestInit);
     const result = await response.json();
     if (result.success) {
       cartItems.value = result.data.items || [];

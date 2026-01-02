@@ -42,7 +42,8 @@ const submitNewTodo = async () => {
     headers: {
       "Content-Type": "application/json",
     },
-  });
+    duplex: "half",
+  } as RequestInit);
   await response.blob();
 };
 </script>

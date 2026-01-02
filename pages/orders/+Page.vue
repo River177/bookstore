@@ -120,8 +120,9 @@ const confirmDelivery = async (orderId: number) => {
     const response = await fetch(`/api/orders/${orderId}/confirm`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: userState.user.id })
-    })
+      body: JSON.stringify({ userId: userState.user.id }),
+      duplex: 'half',
+    } as RequestInit)
     
     console.log('Response status:', response.status)
     

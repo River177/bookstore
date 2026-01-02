@@ -103,8 +103,9 @@ const saveBook = async () => {
         ...formData.value,
         adminId: admin?.id,
         adminName: admin?.fullName || admin?.username
-      })
-    })
+      }),
+      duplex: 'half',
+    } as RequestInit)
     
     showModal.value = false
     await fetchBooks()
@@ -142,8 +143,9 @@ const updateStock = async (bookId: number, quantity: number) => {
         operatorId: admin?.id,
         remark: stockFormData.value.remark || '手动调整库存',
         adminName: admin?.fullName || admin?.username
-      })
-    })
+      }),
+      duplex: 'half',
+    } as RequestInit)
     await fetchBooks()
     showStockModal.value = false
   } catch (error) {

@@ -106,7 +106,8 @@ async function handleRegister() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),
-    });
+      duplex: "half",
+    } as RequestInit);
 
     const result = await response.json();
 

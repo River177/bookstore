@@ -83,8 +83,9 @@ const updateOrderStatus = async (orderId: number, status: string) => {
         status,
         adminId: admin?.id,
         adminName: admin?.fullName || admin?.username
-      })
-    })
+      }),
+      duplex: 'half',
+    } as RequestInit)
     await fetchOrders()
     if (selectedOrder.value?.id === orderId) {
       selectedOrder.value = { ...selectedOrder.value, status }

@@ -77,7 +77,8 @@ export async function login(username: string, password: string): Promise<{ succe
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    });
+      duplex: "half",
+    } as RequestInit);
 
     const result = await response.json();
 
@@ -105,7 +106,8 @@ export async function adminLogin(username: string, password: string): Promise<{ 
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
-    });
+      duplex: "half",
+    } as RequestInit);
 
     const result = await response.json();
 
@@ -180,7 +182,8 @@ export async function addToCart(bookId: number, quantity: number = 1): Promise<{
         bookId,
         quantity,
       }),
-    });
+      duplex: "half",
+    } as RequestInit);
 
     const result = await response.json();
 
