@@ -2,7 +2,7 @@
 <template>
   <div class="min-h-screen bg-base-200">
     <!-- Toast Notification -->
-    <div v-if="toast.show" class="toast toast-top toast-end z-[100]">
+    <div v-if="toast.show" class="toast toast-center z-[100] top-20">
       <div :class="['alert', toast.type === 'success' ? 'alert-success' : toast.type === 'error' ? 'alert-error' : 'alert-info']">
         <span>{{ toast.message }}</span>
       </div>
@@ -49,22 +49,11 @@
           <li><a href="/search" class="hover:text-primary">搜索图书</a></li>
           <!-- User orders menu item - visible only to logged-in users -->
           <li v-if="userState.user">
-            <a href="/orders" class="hover:text-primary">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              我的订单
-            </a>
+            <a href="/orders" class="hover:text-primary">我的订单</a>
           </li>
           <!-- Admin menu item - visible only to admins -->
           <li v-if="userState.admin">
-            <a href="/admin" class="text-secondary font-semibold hover:bg-secondary hover:text-secondary-content">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-              管理后台
-            </a>
+            <a href="/admin" class="text-secondary font-semibold hover:bg-secondary hover:text-secondary-content">管理后台</a>
           </li>
         </ul>
       </div>

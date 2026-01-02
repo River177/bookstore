@@ -74,18 +74,18 @@ async function main() {
   // Create Books
   console.log("Creating books...");
   const booksData = [
-    { isbn: "9787536692930", title: "三体", author: "刘慈欣", publisher: "重庆出版社", price: 93.00, stockQuantity: 100, description: "亚洲首位雨果奖得主刘慈欣代表作，中国科幻文学里程碑之作", categoryId: 2, salesCount: 156 },
-    { isbn: "9787020024759", title: "红楼梦", author: "曹雪芹", publisher: "人民文学出版社", price: 59.70, stockQuantity: 80, description: "中国古典四大名著之一", categoryId: 1, salesCount: 89 },
-    { isbn: "9787111213826", title: "深入理解计算机系统", author: "Randal E. Bryant", publisher: "机械工业出版社", price: 139.00, stockQuantity: 50, description: "程序员必读经典，从程序员角度理解计算机系统", categoryId: 4, salesCount: 67 },
-    { isbn: "9787544253994", title: "百年孤独", author: "加西亚·马尔克斯", publisher: "南海出版公司", price: 39.50, stockQuantity: 60, description: "魔幻现实主义文学代表作", categoryId: 1, salesCount: 123 },
-    { isbn: "9787020008735", title: "西游记", author: "吴承恩", publisher: "人民文学出版社", price: 47.20, stockQuantity: 70, description: "中国古典四大名著之一", categoryId: 1, salesCount: 95 },
-    { isbn: "9787508353944", title: "明朝那些事儿", author: "当年明月", publisher: "中国友谊出版公司", price: 358.20, stockQuantity: 45, description: "全景展现明朝三百年兴衰", categoryId: 3, salesCount: 78 },
-    { isbn: "9787111407010", title: "算法导论", author: "Thomas H. Cormen", publisher: "机械工业出版社", price: 128.00, stockQuantity: 40, description: "算法领域的经典教材", categoryId: 4, salesCount: 45 },
-    { isbn: "9787115428028", title: "Python编程从入门到实践", author: "Eric Matthes", publisher: "人民邮电出版社", price: 89.00, stockQuantity: 55, description: "Python入门经典教程", categoryId: 4, salesCount: 112 },
-    { isbn: "9787508672069", title: "人类简史", author: "尤瓦尔·赫拉利", publisher: "中信出版社", price: 68.00, stockQuantity: 65, description: "从动物到上帝，人类发展历程", categoryId: 3, salesCount: 134 },
-    { isbn: "9787020002207", title: "水浒传", author: "施耐庵", publisher: "人民文学出版社", price: 45.00, stockQuantity: 75, description: "中国古典四大名著之一", categoryId: 1, salesCount: 82 },
-    { isbn: "9787506365437", title: "活着", author: "余华", publisher: "作家出版社", price: 28.00, stockQuantity: 90, description: "余华代表作，讲述一个人的苦难与坚韧", categoryId: 1, salesCount: 201 },
-    { isbn: "9787544270878", title: "小王子", author: "安东尼·德·圣-埃克苏佩里", publisher: "接力出版社", price: 32.00, stockQuantity: 100, description: "写给大人的童话，关于爱与责任", categoryId: 8, salesCount: 178 },
+    { isbn: "9787536692930", title: "三体", author: "刘慈欣", publisher: "重庆出版社", price: 93.00, stockQuantity: 100, description: "亚洲首位雨果奖得主刘慈欣代表作，中国科幻文学里程碑之作", coverImage: "https://img1.doubanio.com/view/subject/m/public/s2768378.jpg", categoryId: 2, salesCount: 156 },
+    { isbn: "9787020024759", title: "红楼梦", author: "曹雪芹", publisher: "人民文学出版社", price: 59.70, stockQuantity: 80, description: "中国古典四大名著之一", coverImage: "https://img1.doubanio.com/view/subject/m/public/s1070959.jpg", categoryId: 1, salesCount: 89 },
+    { isbn: "9787111213826", title: "深入理解计算机系统", author: "Randal E. Bryant", publisher: "机械工业出版社", price: 139.00, stockQuantity: 50, description: "程序员必读经典，从程序员角度理解计算机系统", coverImage: "https://img1.doubanio.com/view/subject/m/public/s29195878.jpg", categoryId: 4, salesCount: 67 },
+    { isbn: "9787544253994", title: "百年孤独", author: "加西亚·马尔克斯", publisher: "南海出版公司", price: 39.50, stockQuantity: 60, description: "魔幻现实主义文学代表作", coverImage: "https://img1.doubanio.com/view/subject/m/public/s27237850.jpg", categoryId: 1, salesCount: 123 },
+    { isbn: "9787020008735", title: "西游记", author: "吴承恩", publisher: "人民文学出版社", price: 47.20, stockQuantity: 70, description: "中国古典四大名著之一", coverImage: "https://img9.doubanio.com/view/subject/m/public/s1627374.jpg", categoryId: 1, salesCount: 95 },
+    { isbn: "9787508353944", title: "明朝那些事儿", author: "当年明月", publisher: "中国友谊出版公司", price: 358.20, stockQuantity: 45, description: "全景展现明朝三百年兴衰", coverImage: "https://img1.doubanio.com/view/subject/m/public/s29399938.jpg", categoryId: 3, salesCount: 78 },
+    { isbn: "9787111407010", title: "算法导论", author: "Thomas H. Cormen", publisher: "机械工业出版社", price: 128.00, stockQuantity: 40, description: "算法领域的经典教材", coverImage: "https://img9.doubanio.com/view/subject/m/public/s25648004.jpg", categoryId: 4, salesCount: 45 },
+    { isbn: "9787115428028", title: "Python编程从入门到实践", author: "Eric Matthes", publisher: "人民邮电出版社", price: 89.00, stockQuantity: 55, description: "Python入门经典教程", coverImage: "https://img9.doubanio.com/view/subject/m/public/s28891775.jpg", categoryId: 4, salesCount: 112 },
+    { isbn: "9787508672069", title: "人类简史", author: "尤瓦尔·赫拉利", publisher: "中信出版社", price: 68.00, stockQuantity: 65, description: "从动物到上帝，人类发展历程", coverImage: "https://img2.doubanio.com/view/subject/m/public/s29357031.jpg", categoryId: 3, salesCount: 134 },
+    { isbn: "9787020002207", title: "水浒传", author: "施耐庵", publisher: "人民文学出版社", price: 45.00, stockQuantity: 75, description: "中国古典四大名著之一", coverImage: "https://img1.doubanio.com/view/subject/m/public/s1436519.jpg", categoryId: 1, salesCount: 82 },
+    { isbn: "9787506365437", title: "活着", author: "余华", publisher: "作家出版社", price: 28.00, stockQuantity: 90, description: "余华代表作，讲述一个人的苦难与坚韧", coverImage: "https://img9.doubanio.com/view/subject/m/public/s29869926.jpg", categoryId: 1, salesCount: 201 },
+    { isbn: "9787544270878", title: "小王子", author: "安东尼·德·圣-埃克苏佩里", publisher: "接力出版社", price: 32.00, stockQuantity: 100, description: "写给大人的童话，关于爱与责任", coverImage: "https://img1.doubanio.com/view/subject/m/public/s1237549.jpg", categoryId: 8, salesCount: 178 },
   ];
 
   for (const bookData of booksData) {
@@ -148,7 +148,6 @@ async function main() {
       roleName: "超级管理员",
       roleKey: "super_admin",
       description: "拥有系统所有权限",
-      sortOrder: 1,
     },
   });
 
@@ -159,7 +158,6 @@ async function main() {
       roleName: "运营管理员",
       roleKey: "operation_admin",
       description: "负责图书和订单管理",
-      sortOrder: 2,
     },
   });
   console.log("✅ Created roles");
@@ -171,24 +169,6 @@ async function main() {
     create: { adminId: admin.id, roleId: superAdminRole.id },
   });
   console.log("✅ Assigned super_admin role to admin");
-
-  // Create System Configs
-  console.log("Creating system configs...");
-  const configs = [
-    { configKey: "site_name", configValue: "网上书店", configGroup: "general", description: "网站名称", isPublic: 1 },
-    { configKey: "stock_warning_threshold", configValue: "10", configGroup: "inventory", description: "库存预警阈值" },
-    { configKey: "shipping_fee", configValue: "6.00", configGroup: "order", description: "运费" },
-    { configKey: "free_shipping_amount", configValue: "49.00", configGroup: "order", description: "免运费金额" },
-  ];
-
-  for (const config of configs) {
-    await prisma.systemConfig.upsert({
-      where: { configKey: config.configKey },
-      update: config,
-      create: config,
-    });
-  }
-  console.log(`✅ Created ${configs.length} system configs`);
 
   console.log("\n🎉 Database seed completed!");
 }

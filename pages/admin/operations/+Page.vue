@@ -32,7 +32,7 @@ const moduleFilter = ref('')
 const actionFilter = ref('')
 
 const modules = ['用户', '图书', '订单', '系统', '认证']
-const actions = ['登录', '登出', '创建', '更新', '删除', '查询']
+const actions = ['登录', '登出', '创建', '更新', '删除', '查询', '更新状态', '调整库存']
 
 const fetchLogs = async () => {
   loading.value = true

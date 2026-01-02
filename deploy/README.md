@@ -63,7 +63,7 @@ sudo chown -R $USER:$USER /var/log/bookstore
 
 #### 2.4 配置 Caddy
 
-将 `deploy/Caddyfile` 复制到服务器：
+将 `Caddyfile` 复制到服务器：
 
 ```bash
 # 复制 Caddyfile 到服务器

@@ -15,18 +15,41 @@ const showConfirm = inject<(message: string, title?: string) => Promise<boolean>
 
 // 检查是否需要客户端加载数据
 onMounted(async () => {
-  if (data.needsClientLoad && userState.user) {
-    await loadOrders();
-  }
+  // 给 userStore 一点时间来初始化
+  setTimeout(async () => {
+    if (data.needsClientLoad || orders.value.length === 0) {
+      await loadOrders();
+    }
+  }, 100);
 });
 
 const loadOrders = async () => {
-  if (!userState.user) return;
+  // 尝试从 localStorage 获取用户信息
+  let userId: number | null = null;
+  
+  if (userState.user) {
+    userId = userState.user.id;
+  } else {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        userId = user.id;
+      }
+    } catch (e) {
+      console.error('Failed to get user from localStorage:', e);
+    }
+  }
+  
+  if (!userId) {
+    console.log('No user ID found, skipping order load');
+    return;
+  }
   
   isLoading.value = true;
   try {
     const page = new URLSearchParams(window.location.search).get('page') || '1';
-    const response = await fetch(`/api/orders?userId=${userState.user.id}&page=${page}`);
+    const response = await fetch(`/api/orders?userId=${userId}&page=${page}`);
     const result = await response.json();
     if (result.success) {
       Object.assign(data, {

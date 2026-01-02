@@ -103,16 +103,16 @@ const orderStatusMap: Record<string, { label: string; class: string }> = {
             <h2 class="card-title">快捷操作</h2>
             <div class="grid grid-cols-2 gap-3">
               <a href="/admin/books" class="btn btn-outline btn-primary">
-                📚 图书管理
+                图书管理
               </a>
               <a href="/admin/orders" class="btn btn-outline btn-secondary">
-                📦 订单管理
+                订单管理
               </a>
               <a href="/admin/users" class="btn btn-outline btn-accent">
-                👥 用户管理
+                用户管理
               </a>
               <a href="/admin/operations" class="btn btn-outline">
-                📝 操作日志
+                操作日志
               </a>
             </div>
 
@@ -120,13 +120,13 @@ const orderStatusMap: Record<string, { label: string; class: string }> = {
             <div class="divider">提醒事项</div>
             <div class="space-y-2">
               <div v-if="stats.pendingOrders > 0" class="alert alert-warning">
-                <span>⏳ 有 {{ stats.pendingOrders }} 个订单待处理</span>
+                <span>有 {{ stats.pendingOrders }} 个订单待处理</span>
               </div>
               <div v-if="stats.lowStockBooks > 0" class="alert alert-error">
-                <span>📦 有 {{ stats.lowStockBooks }} 本图书库存不足</span>
+                <span>有 {{ stats.lowStockBooks }} 本图书库存不足</span>
               </div>
               <div v-if="stats.pendingOrders === 0 && stats.lowStockBooks === 0" class="alert alert-success">
-                <span>✅ 一切正常，没有待处理事项</span>
+                <span>一切正常，没有待处理事项</span>
               </div>
             </div>
           </div>

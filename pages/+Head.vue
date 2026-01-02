@@ -2,6 +2,7 @@
 
 <template>
   <link rel="icon" :href="logoUrl" />
+  <meta name="referrer" content="no-referrer" />
 </template>
 
 <script setup lang="ts">

@@ -15,50 +15,50 @@
         <form @submit.prevent="handleRegister">
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">用户名 *</span>
+              <span class="label-text w-24">用户名 *</span>
             </label>
             <input v-model="form.username" type="text" placeholder="请输入用户名" 
-                   class="input input-bordered" required minlength="3" maxlength="50" />
+                   class="input input-bordered w-full" required minlength="3" maxlength="50" />
           </div>
 
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">邮箱 *</span>
+              <span class="label-text w-24">邮箱 *</span>
             </label>
             <input v-model="form.email" type="email" placeholder="请输入邮箱" 
-                   class="input input-bordered" required />
+                   class="input input-bordered w-full" required />
           </div>
 
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">姓名 *</span>
+              <span class="label-text w-24">姓名 *</span>
             </label>
             <input v-model="form.fullName" type="text" placeholder="请输入真实姓名" 
-                   class="input input-bordered" required />
+                   class="input input-bordered w-full" required />
           </div>
 
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">手机号</span>
+              <span class="label-text w-24">手机号</span>
             </label>
             <input v-model="form.phone" type="tel" placeholder="请输入手机号" 
-                   class="input input-bordered" />
+                   class="input input-bordered w-full" />
           </div>
 
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">密码 *</span>
+              <span class="label-text w-24">密码 *</span>
             </label>
             <input v-model="form.password" type="password" placeholder="请输入密码 (至少6位)" 
-                   class="input input-bordered" required minlength="6" />
+                   class="input input-bordered w-full" required minlength="6" />
           </div>
 
           <div class="form-control mb-6">
             <label class="label">
-              <span class="label-text">确认密码 *</span>
+              <span class="label-text w-24">确认密码 *</span>
             </label>
             <input v-model="confirmPassword" type="password" placeholder="请再次输入密码" 
-                   class="input input-bordered" required />
+                   class="input input-bordered w-full" required />
           </div>
 
           <button type="submit" class="btn btn-primary w-full" :disabled="loading">

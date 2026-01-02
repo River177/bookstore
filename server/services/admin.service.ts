@@ -15,13 +15,7 @@ export class AdminService {
       include: {
         roles: {
           include: {
-            role: {
-              include: {
-                permissions: {
-                  include: { permission: true }
-                }
-              }
-            }
+            role: true
           }
         }
       }
@@ -42,13 +36,8 @@ export class AdminService {
       data: { lastLoginAt: new Date() }
     });
 
-    // 提取权限列表
-    const permissions = admin.roles.flatMap(ar =>
-      ar.role.permissions.map(rp => rp.permission.permissionKey)
-    );
-
     const { password: _, ...adminData } = admin;
-    return { ...adminData, permissions };
+    return adminData;
   }
 
   /**
@@ -98,13 +87,7 @@ export class AdminService {
     targetType?: string;
     targetId?: number;
     content?: string;
-    requestUrl?: string;
-    requestMethod?: string;
-    responseCode?: number;
-    ipAddress?: string;
-    executionTime?: number;
     status?: number;
-    errorMessage?: string;
   }) {
     return prisma.operationLog.create({
       data: {
@@ -115,13 +98,7 @@ export class AdminService {
         targetType: data.targetType,
         targetId: data.targetId,
         content: data.content,
-        requestUrl: data.requestUrl,
-        requestMethod: data.requestMethod,
-        responseCode: data.responseCode,
-        ipAddress: data.ipAddress,
-        executionTime: data.executionTime,
-        status: data.status ?? 1,
-        errorMessage: data.errorMessage
+        status: data.status ?? 1
       }
     });
   }
@@ -297,8 +274,8 @@ export class AdminService {
     await this.logOperation({
       adminId,
       adminName,
-      module: 'user',
-      action: 'update_status',
+      module: '用户',
+      action: '更新状态',
       targetType: 'User',
       targetId: userId,
       content: `更新用户 ${user?.username || userId} 状态为 ${status === 1 ? '启用' : '禁用'}`,
@@ -389,8 +366,8 @@ export class AdminService {
     await this.logOperation({
       adminId,
       adminName,
-      module: 'order',
-      action: 'update_status',
+      module: '订单',
+      action: '更新状态',
       targetType: 'Order',
       targetId: orderId,
       content: `更新订单 #${orderId} (用户: ${order?.user?.username || 'unknown'}) 状态: ${order?.status ? statusMap[order.status] : ''} → ${statusMap[status] || status}`,
@@ -467,8 +444,8 @@ export class AdminService {
     await this.logOperation({
       adminId,
       adminName,
-      module: 'book',
-      action: 'create',
+      module: '图书',
+      action: '创建',
       targetType: 'Book',
       targetId: result.id,
       content: `创建图书: ${data.title} (ISBN: ${data.isbn})`,
@@ -508,8 +485,8 @@ export class AdminService {
     await this.logOperation({
       adminId,
       adminName,
-      module: 'book',
-      action: 'update',
+      module: '图书',
+      action: '更新',
       targetType: 'Book',
       targetId: bookId,
       content: `更新图书: ${book?.title || bookId}${changes.length > 0 ? ` (${changes.join(', ')})` : ''}`,
@@ -530,8 +507,8 @@ export class AdminService {
     await this.logOperation({
       adminId,
       adminName,
-      module: 'book',
-      action: 'delete',
+      module: '图书',
+      action: '删除',
       targetType: 'Book',
       targetId: bookId,
       content: `删除图书: ${book?.title || bookId} (ISBN: ${book?.isbn || 'N/A'})`,
@@ -574,8 +551,8 @@ export class AdminService {
     await this.logOperation({
       adminId: operatorId,
       adminName,
-      module: 'book',
-      action: 'update_stock',
+      module: '图书',
+      action: '调整库存',
       targetType: 'Book',
       targetId: bookId,
       content: `调整图书 "${book.title}" 库存: ${beforeQuantity} → ${afterQuantity} (${quantity > 0 ? '+' : ''}${quantity})${remark ? ` - ${remark}` : ''}`,

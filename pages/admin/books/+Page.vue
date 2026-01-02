@@ -325,51 +325,51 @@ const handleSearch = () => {
         <form @submit.prevent="saveBook" class="space-y-4">
           <div class="grid grid-cols-2 gap-4">
             <div class="form-control">
-              <label class="label"><span class="label-text">ISBN *</span></label>
-              <input v-model="formData.isbn" type="text" class="input input-bordered" required />
+              <label class="label"><span class="label-text w-32">ISBN *</span></label>
+              <input v-model="formData.isbn" type="text" class="input input-bordered w-full" required />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">书名 *</span></label>
-              <input v-model="formData.title" type="text" class="input input-bordered" required />
+              <label class="label"><span class="label-text w-32">书名 *</span></label>
+              <input v-model="formData.title" type="text" class="input input-bordered w-full" required />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">作者 *</span></label>
-              <input v-model="formData.author" type="text" class="input input-bordered" required />
+              <label class="label"><span class="label-text w-32">作者 *</span></label>
+              <input v-model="formData.author" type="text" class="input input-bordered w-full" required />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">出版社</span></label>
-              <input v-model="formData.publisher" type="text" class="input input-bordered" />
+              <label class="label"><span class="label-text w-32">出版社</span></label>
+              <input v-model="formData.publisher" type="text" class="input input-bordered w-full" />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">价格 *</span></label>
-              <input v-model="formData.price" type="number" step="0.01" class="input input-bordered" required />
+              <label class="label"><span class="label-text w-32">价格 *</span></label>
+              <input v-model="formData.price" type="number" step="0.01" class="input input-bordered w-full" required />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">库存</span></label>
-              <input v-model="formData.stockQuantity" type="number" class="input input-bordered" />
+              <label class="label"><span class="label-text w-32">库存</span></label>
+              <input v-model="formData.stockQuantity" type="number" class="input input-bordered w-full" />
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">分类</span></label>
-              <select v-model="formData.categoryId" class="select select-bordered">
+              <label class="label"><span class="label-text w-32">分类</span></label>
+              <select v-model="formData.categoryId" class="select select-bordered w-full">
                 <option :value="null">无分类</option>
                 <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
               </select>
             </div>
             <div class="form-control">
-              <label class="label"><span class="label-text">状态</span></label>
-              <select v-model="formData.status" class="select select-bordered">
+              <label class="label"><span class="label-text w-32">状态</span></label>
+              <select v-model="formData.status" class="select select-bordered w-full">
                 <option :value="1">上架</option>
                 <option :value="0">下架</option>
               </select>
             </div>
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">封面图片URL</span></label>
-            <input v-model="formData.coverImage" type="text" class="input input-bordered" />
+            <label class="label"><span class="label-text w-32">封面图片URL</span></label>
+            <input v-model="formData.coverImage" type="text" class="input input-bordered w-full" />
           </div>
           <div class="form-control">
-            <label class="label"><span class="label-text">描述</span></label>
-            <textarea v-model="formData.description" class="textarea textarea-bordered h-24"></textarea>
+            <label class="label"><span class="label-text w-32">描述</span></label>
+            <textarea v-model="formData.description" class="textarea textarea-bordered w-full h-24"></textarea>
           </div>
 
           <div class="modal-action">
@@ -399,14 +399,16 @@ const handleSearch = () => {
           <div class="form-control">
             <label class="label">
               <span class="label-text">库存变动数量 *</span>
-              <span class="label-text-alt text-base-content/60">正数增加，负数减少</span>
             </label>
             <input 
               v-model.number="stockFormData.quantity" 
               type="number" 
-              class="input input-bordered" 
+              class="input input-bordered w-full" 
               placeholder="例如: +10 或 -5"
             />
+            <label class="label">
+              <span class="label-text-alt text-base-content/60">正数增加，负数减少</span>
+            </label>
           </div>
 
           <div class="form-control">
@@ -415,7 +417,7 @@ const handleSearch = () => {
             </label>
             <textarea 
               v-model="stockFormData.remark" 
-              class="textarea textarea-bordered" 
+              class="textarea textarea-bordered w-full" 
               placeholder="请输入调整原因"
             ></textarea>
           </div>

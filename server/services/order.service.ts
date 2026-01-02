@@ -5,7 +5,6 @@ import type { OrderInfo, OrderStatus } from "../../lib/types";
 export interface CreateOrderData {
   userId: number;
   shippingAddress: string;
-  paymentMethodId?: number;
 }
 
 export class OrderService {
@@ -13,7 +12,7 @@ export class OrderService {
    * Create order from cart
    */
   static async createOrder(data: CreateOrderData): Promise<OrderInfo> {
-    const { userId, shippingAddress, paymentMethodId } = data;
+    const { userId, shippingAddress } = data;
 
     // Get cart with items
     const cart = await prisma.shoppingCart.findUnique({
@@ -51,7 +50,6 @@ export class OrderService {
       const newOrder = await tx.order.create({
         data: {
           userId,
-          paymentId: paymentMethodId,
           totalAmount,
           shippingAddress,
           status: "pending",

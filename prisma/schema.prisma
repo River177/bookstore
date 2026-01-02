@@ -30,9 +30,8 @@ model User {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  cart           ShoppingCart?
-  orders         Order[]
-  paymentMethods PaymentMethod[]
+  cart   ShoppingCart?
+  orders Order[]
 
   @@map("users")
 }
@@ -107,29 +106,10 @@ model CartItem {
   @@map("cart_items")
 }
 
-/// 支付方式表
-model PaymentMethod {
-  id         Int      @id @default(autoincrement()) @map("payment_id")
-  userId     Int      @map("user_id")
-  cardType   String   @map("card_type") @db.VarChar(20)
-  cardNumber String   @map("card_number") @db.VarChar(20)
-  cardHolder String   @map("card_holder") @db.VarChar(100)
-  expiryDate String   @map("expiry_date") @db.VarChar(10)
-  createdAt  DateTime @default(now()) @map("created_at")
-
-  // Relations
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  orders Order[]
-
-  @@index([userId])
-  @@map("payment_methods")
-}
-
 /// 订单表
 model Order {
   id              Int      @id @default(autoincrement()) @map("order_id")
   userId          Int      @map("user_id")
-  paymentId       Int?     @map("payment_id")
   totalAmount     Decimal  @map("total_amount") @db.Decimal(10, 2)
   status          String   @default("pending") @db.VarChar(20)
   shippingAddress String   @map("shipping_address") @db.VarChar(255)
@@ -137,9 +117,8 @@ model Order {
   updatedAt       DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user          User           @relation(fields: [userId], references: [id], onDelete: Restrict)
-  paymentMethod PaymentMethod? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  items         OrderItem[]
+  user  User        @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items OrderItem[]
 
   @@index([userId])
   @@index([status])
@@ -176,10 +155,8 @@ model Admin {
   email       String    @unique @db.VarChar(100)
   fullName    String    @map("full_name") @db.VarChar(100)
   phone       String?   @db.VarChar(20)
-  avatar      String?   @db.VarChar(255)
   status      Int       @default(1) @db.SmallInt
   lastLoginAt DateTime? @map("last_login_at")
-  lastLoginIp String?   @map("last_login_ip") @db.VarChar(50)
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
@@ -197,47 +174,13 @@ model Role {
   roleKey     String   @unique @map("role_key") @db.VarChar(50)
   description String?  @db.VarChar(255)
   status      Int      @default(1) @db.SmallInt
-  sortOrder   Int      @default(0) @map("sort_order")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   // Relations
-  admins      AdminRole[]
-  permissions RolePermission[]
+  admins AdminRole[]
 
   @@map("roles")
-}
-
-/// 权限表
-model Permission {
-  id             Int      @id @default(autoincrement()) @map("permission_id")
-  permissionName String   @map("permission_name") @db.VarChar(50)
-  permissionKey  String   @unique @map("permission_key") @db.VarChar(100)
-  module         String   @db.VarChar(50)
-  description    String?  @db.VarChar(255)
-  sortOrder      Int      @default(0) @map("sort_order")
-  createdAt      DateTime @default(now()) @map("created_at")
-
-  // Relations
-  roles RolePermission[]
-
-  @@index([module])
-  @@map("permissions")
-}
-
-/// 角色-权限关联表
-model RolePermission {
-  id           Int      @id @default(autoincrement())
-  roleId       Int      @map("role_id")
-  permissionId Int      @map("permission_id")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  // Relations
-  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([roleId, permissionId])
-  @@map("role_permissions")
 }
 
 /// 管理员-角色关联表
@@ -257,24 +200,16 @@ model AdminRole {
 
 /// 操作日志表
 model OperationLog {
-  id            BigInt   @id @default(autoincrement()) @map("log_id")
-  adminId       Int?     @map("admin_id")
-  adminName     String?  @map("admin_name") @db.VarChar(50)
-  module        String   @db.VarChar(50)
-  action        String   @db.VarChar(50)
-  targetType    String?  @map("target_type") @db.VarChar(50)
-  targetId      Int?     @map("target_id")
-  content       String?  @db.Text
-  requestUrl    String?  @map("request_url") @db.VarChar(255)
-  requestMethod String?  @map("request_method") @db.VarChar(10)
-  requestParams String?  @map("request_params") @db.Text
-  responseCode  Int?     @map("response_code")
-  ipAddress     String?  @map("ip_address") @db.VarChar(50)
-  userAgent     String?  @map("user_agent") @db.VarChar(500)
-  executionTime Int?     @map("execution_time")
-  status        Int      @default(1) @db.SmallInt
-  errorMessage  String?  @map("error_message") @db.Text
-  createdAt     DateTime @default(now()) @map("created_at")
+  id         BigInt   @id @default(autoincrement()) @map("log_id")
+  adminId    Int?     @map("admin_id")
+  adminName  String?  @map("admin_name") @db.VarChar(50)
+  module     String   @db.VarChar(50)
+  action     String   @db.VarChar(50)
+  targetType String?  @map("target_type") @db.VarChar(50)
+  targetId   Int?     @map("target_id")
+  content    String?  @db.Text
+  status     Int      @default(1) @db.SmallInt
+  createdAt  DateTime @default(now()) @map("created_at")
 
   // Relations
   admin Admin? @relation(fields: [adminId], references: [id], onDelete: SetNull)
@@ -307,21 +242,4 @@ model StockLog {
   @@index([changeType])
   @@index([createdAt])
   @@map("stock_logs")
-}
-
-/// 系统配置表
-model SystemConfig {
-  id          Int      @id @default(autoincrement()) @map("config_id")
-  configKey   String   @unique @map("config_key") @db.VarChar(100)
-  configValue String?  @map("config_value") @db.Text
-  configType  String   @default("string") @map("config_type") @db.VarChar(20)
-  configGroup String   @default("general") @map("config_group") @db.VarChar(50)
-  description String?  @db.VarChar(255)
-  isPublic    Int      @default(0) @map("is_public") @db.SmallInt
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  @@index([configGroup])
-  @@map("system_configs")
 }

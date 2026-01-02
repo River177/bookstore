@@ -35,19 +35,19 @@
         <form @submit.prevent="handleLogin">
           <div class="form-control mb-4">
             <label class="label">
-              <span class="label-text">{{ loginType === 'user' ? '用户名' : '管理员账号' }}</span>
+              <span class="label-text w-24">{{ loginType === 'user' ? '用户名' : '管理员账号' }}</span>
             </label>
             <input v-model="username" type="text" 
                    :placeholder="loginType === 'user' ? '请输入用户名' : '请输入管理员账号'" 
-                   class="input input-bordered" required />
+                   class="input input-bordered w-full" required />
           </div>
 
           <div class="form-control mb-6">
             <label class="label">
-              <span class="label-text">密码</span>
+              <span class="label-text w-24">密码</span>
             </label>
             <input v-model="password" type="password" placeholder="请输入密码" 
-                   class="input input-bordered" required />
+                   class="input input-bordered w-full" required />
           </div>
 
           <button type="submit" class="btn btn-primary w-full" :disabled="loading">
