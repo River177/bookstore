@@ -36,8 +36,8 @@
   columns: (1fr, 2fr, 2fr),
   align: (center, left, left),
   [*Name*], [*Student ID*], [*Email*],
-  [Member 1], [ID], [email@example.com],
-  [Member 2], [ID], [email@example.com],
+  [Member 1], [ID], [email\@example.com],
+  [Member 2], [ID], [email\@example.com],
 )
 
 == Responsibilities
@@ -677,101 +677,34 @@ const lowStockBooks = await prisma.book.findMany({
 === Homepage
 // Describe and show homepage
 #figure(
-  // image("path/to/homepage.png", width: 100%),
+  image("./homepage.png"),
   caption: [Homepage Interface]
 )
 
 === Book Listing Page
 // Describe and show book listing
 #figure(
-  // image("path/to/books.png", width: 100%),
+  image("./books.png"),
   caption: [Book Listing Page]
 )
 
 === Shopping Cart Page
 // Describe and show cart
 #figure(
-  // image("path/to/cart.png", width: 100%),
+  image("./cart.png"),
   caption: [Shopping Cart Interface]
 )
 
 === Order Management Page
 // Describe and show orders
 #figure(
-  // image("path/to/orders.png", width: 100%),
+  image("./orders.png"),
   caption: [Order Management Interface]
 )
 
 === Admin Dashboard
 // Describe and show admin interface
 #figure(
-  // image("path/to/admin.png", width: 100%),
+  image("./admin.png"),
   caption: [Admin Dashboard]
 )
-
-== Functional Testing Results
-
-=== Test Case 1: User Registration and Login
-- *Test Description*: 
-- *Expected Result*: 
-- *Actual Result*: 
-- *Status*: ✓ Pass / ✗ Fail
-
-=== Test Case 2: Book Search and Filter
-- *Test Description*: 
-- *Expected Result*: 
-- *Actual Result*: 
-- *Status*: ✓ Pass / ✗ Fail
-
-=== Test Case 3: Add to Cart and Checkout
-- *Test Description*: 
-- *Expected Result*: 
-- *Actual Result*: 
-- *Status*: ✓ Pass / ✗ Fail
-
-=== Test Case 4: Order Management
-- *Test Description*: 
-- *Expected Result*: 
-- *Actual Result*: 
-- *Status*: ✓ Pass / ✗ Fail
-
-=== Test Case 5: Admin Operations
-- *Test Description*: 
-- *Expected Result*: 
-- *Actual Result*: 
-- *Status*: ✓ Pass / ✗ Fail
-
-== Performance Analysis
-
-// Describe system performance metrics
-- *Response Time*: 
-- *Concurrent Users*: 
-- *Database Query Performance*: 
-
-#pagebreak()
-
-= Conclusion
-
-== Summary
-
-// Summarize the project achievements
-
-== Challenges and Solutions
-
-// Describe challenges faced and how they were solved
-
-== Future Improvements
-
-// Suggest potential improvements
-- 
-- 
-- 
-
-#pagebreak()
-
-= References
-
-// List your references
-+ 
-+ 
-+ 
