@@ -1,6 +1,6 @@
 <!-- pages/+Layout.vue - Main Layout -->
 <template>
-  <div class="min-h-screen bg-base-200">
+  <div class="min-h-screen bg-base-200 flex flex-col">
     <!-- Toast Notification -->
     <div v-if="toast.show" class="toast toast-center z-[100] top-20">
       <div :class="['alert', toast.type === 'success' ? 'alert-success' : toast.type === 'error' ? 'alert-error' : 'alert-info']">
@@ -37,8 +37,16 @@
           </ul>
         </div>
         <a href="/" class="btn btn-ghost text-xl">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2" viewBox="0 0 48 48" fill="none">
+            <path d="M8 10C8 8.89543 8.89543 8 10 8H20C21.1046 8 22 8.89543 22 10V38C22 39.1046 21.1046 40 20 40H10C8.89543 40 8 39.1046 8 38V10Z" fill="currentColor" opacity="0.3" />
+            <path d="M26 10C26 8.89543 26.8954 8 28 8H38C39.1046 8 40 8.89543 40 10V38C40 39.1046 39.1046 40 38 40H28C26.8954 40 26 39.1046 26 38V10Z" fill="currentColor" opacity="0.5" />
+            <path d="M24 6L26 8L24 10L22 8L24 6Z" fill="currentColor" />
+            <rect x="11" y="14" width="8" height="2" rx="1" fill="white" opacity="0.6" />
+            <rect x="11" y="19" width="6" height="2" rx="1" fill="white" opacity="0.6" />
+            <rect x="11" y="24" width="7" height="2" rx="1" fill="white" opacity="0.6" />
+            <rect x="29" y="14" width="8" height="2" rx="1" fill="white" opacity="0.6" />
+            <rect x="29" y="19" width="6" height="2" rx="1" fill="white" opacity="0.6" />
+            <rect x="29" y="24" width="7" height="2" rx="1" fill="white" opacity="0.6" />
           </svg>
           网上书店
         </a>
@@ -126,18 +134,26 @@
     </div>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8">
+    <main class="container mx-auto px-4 py-8 flex-grow">
       <slot />
     </main>
 
     <!-- Footer -->
     <footer class="footer footer-center p-10 bg-base-300 text-base-content">
       <aside>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" viewBox="0 0 48 48" fill="none">
+          <path d="M8 10C8 8.89543 8.89543 8 10 8H20C21.1046 8 22 8.89543 22 10V38C22 39.1046 21.1046 40 20 40H10C8.89543 40 8 39.1046 8 38V10Z" fill="currentColor" opacity="0.3" />
+          <path d="M26 10C26 8.89543 26.8954 8 28 8H38C39.1046 8 40 8.89543 40 10V38C40 39.1046 39.1046 40 38 40H28C26.8954 40 26 39.1046 26 38V10Z" fill="currentColor" opacity="0.5" />
+          <path d="M24 6L26 8L24 10L22 8L24 6Z" fill="currentColor" />
+          <rect x="11" y="14" width="8" height="2" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="11" y="19" width="6" height="2" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="11" y="24" width="7" height="2" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="29" y="14" width="8" height="2" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="29" y="19" width="6" height="2" rx="1" fill="currentColor" opacity="0.6" />
+          <rect x="29" y="24" width="7" height="2" rx="1" fill="currentColor" opacity="0.6" />
         </svg>
         <p class="font-bold">网上书店 - Online Bookstore</p>
-        <p>Copyright © 2024 - 专业的在线图书购物平台</p>
+        <p>Copyright © 2026 - 专业的在线图书购物平台</p>
       </aside>
     </footer>
   </div>
