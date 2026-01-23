@@ -1,32 +1,15 @@
-#set document(title: "Database Final Project Report")
-#set page(paper: "a4", margin: 2.5cm)
-#set text(font: "Times New Roman", size: 11pt)
-#set heading(numbering: "1.1")
-#show link: underline
+#import "template.typ": project
 
-#align(center)[
-  #text(size: 20pt, weight: "bold")[
-    Database Final Project Report
-  ]
-  
-  #v(0.5cm)
-  
-  #text(size: 14pt)[
-    Bookstore Management System
-  ]
-  
-  #v(1cm)
-  
-  #text(size: 12pt)[
-    Date: #datetime.today().display()
-  ]
-]
-
-#pagebreak()
-
-#outline(depth: 3, indent: 1em)
-
-#pagebreak()
+#show: project.with(
+  title: "数据库系统课程设计",
+  subtitle: "实验报告",
+  info: (
+    title: "在线书店管理系统",
+    name: "伍浩 吴榜 马芝兰 陈昱衡",
+    teacher: "王帅",
+    date: datetime.today().display("[year]年[month]月[day]日"),
+  )
+)
 
 = Information of Team Members and Responsibilities
 
@@ -58,8 +41,6 @@
   ],
 )
 
-#pagebreak()
-
 = Database Scenario
 
 == Background
@@ -82,9 +63,7 @@ The system serves two key user roles:
 - Implement role-based access control with separate user and administrator interfaces
 - Ensure data consistency and prevent overselling through transaction management and inventory control
 - Provide comprehensive logging and auditing capabilities for system operations and inventory changes
-- Design a scalable database architecture supporting future business expansion 
-
-#pagebreak()
+- Design a scalable database architecture supporting future business expansion
 
 = Requirements Analysis
 
@@ -141,9 +120,7 @@ The system serves two key user roles:
 - *Responsive Design*: Modern UI with consistent visual design using Tailwind CSS and DaisyUI
 - *Session Persistence*: Shopping cart data maintained across sessions for logged-in users
 - *Form Validation*: Immediate feedback on format errors during registration and login
-- *Operational Feedback*: Toast notifications for successful actions, modal warnings for errors 
-
-#pagebreak()
+- *Operational Feedback*: Toast notifications for successful actions, modal warnings for errors
 
 = ER Diagram Design
 
@@ -281,8 +258,6 @@ The system uses a dual ER diagram design separating user-side and administration
 *Administration-Side ER Diagram* emphasizes access control, logging, and inventory management, including entities for administrators, roles, operation logs, and stock logs.
 
 This separation reduces system complexity and makes business logic clearer, providing a solid foundation for database implementation.
-
-#pagebreak()
 
 = Technical Framework
 
@@ -431,8 +406,6 @@ The schema implements:
 - *Performance Optimization*: Strategic indexes on frequently queried fields
 - *Data Validation*: Type constraints and default values
 - *Audit Trail*: Timestamp fields and logging tables for traceability
-
-#pagebreak()
 
 = Functional Design & Software Implementation
 
@@ -667,8 +640,6 @@ const lowStockBooks = await prisma.book.findMany({
   orderBy: { stockQuantity: 'asc' }
 });
 ```
-
-#pagebreak()
 
 = Results Display
 
