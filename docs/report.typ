@@ -4,7 +4,7 @@
   title: "数据库系统课程设计",
   subtitle: "实验报告",
   info: (
-    title: "在线书店管理系统",
+    title: "网上书店",
     name: "伍浩 吴榜 马芝兰 陈昱衡",
     teacher: "王帅",
     date: datetime.today().display("[year]年[month]月[day]日"),
@@ -16,28 +16,40 @@
 == Team Members
 
 #table(
-  columns: (1fr, 2fr, 2fr),
-  align: (center, left, left),
-  [*Name*], [*Student ID*], [*Email*],
-  [Member 1], [ID], [email\@example.com],
-  [Member 2], [ID], [email\@example.com],
+  columns: (1fr, 2fr),
+  align: (center, center),
+  [*Name*], [*Student ID*],
+  [伍浩], [71123141],
+  [吴榜], [71123323],
+  [马芝兰], [71123143],
+  [陈昱衡], [71123144],
 )
 
 == Responsibilities
 
 #table(
   columns: (1fr, 3fr),
-  align: (left, left),
+  align: (center + horizon, left + horizon),
   [*Member*], [*Responsibilities*],
-  [Member 1], [
+  [伍浩], [
     - Database design and ER diagram modeling
     - Backend API development and business logic implementation
     - System testing and documentation
   ],
-  [Member 2], [
+  [吴榜], [
     - Frontend UI/UX design and implementation
     - Database schema implementation with Prisma
     - Deployment and system integration
+  ],
+  [马芝兰], [
+    - Requirements analysis and documentation
+    - User interface design and user experience optimization
+    - System integration testing and quality assurance
+  ],
+  [陈昱衡], [
+    - Technical framework selection and architecture design
+    - Database optimization and performance tuning
+    - Project deployment and maintenance
   ],
 )
 
@@ -65,6 +77,17 @@ The system serves two key user roles:
 - Provide comprehensive logging and auditing capabilities for system operations and inventory changes
 - Design a scalable database architecture supporting future business expansion
 
+== Core Business Process
+
+=== Book Retrieval and Display Scenario
+
+Book retrieval and display are the primary steps for users to interact with the system. The database efficiently supports multiple query modes including fuzzy search by title and author, precise ISBN lookup, and category-based filtering.
+
+#figure(
+  image("assets/mermaid-diagram-2026-01-02-191955-20260102192000-z7kvd8q.png", width: 85%),
+  caption: [Book Retrieval Process Flow]
+)
+
 = Requirements Analysis
 
 == Functional Requirements
@@ -74,6 +97,11 @@ The system serves two key user roles:
 - *Login and Authentication*: Supports username/email + password login. Upon successful login, a Token or Session Cookie is issued
 - *Profile Management*: Users can update personal information including contact details and default shipping address
 - *Order History*: Users can view historical orders and track order status (pending payment, shipped, etc.)
+
+#figure(
+  image("assets/未命名绘图.drawio-20260102191257-vxgngmk.png", width: 80%),
+  caption: [User-Side Use Case Diagram]
+)
 
 === Book Management
 - *Homepage Recommendation*: Display books with highest sales or newly listed books
@@ -101,6 +129,11 @@ The system serves two key user roles:
 - *Inventory Management*: All inventory changes (purchase, sales, adjustments) recorded in log table with full traceability
 - *Role-Based Access Control*: RBAC model supporting custom roles and permission isolation
 - *Operation Audit*: Comprehensive logging of all critical operations including operator, timestamp, and change details
+
+#figure(
+  image("assets/未命名绘图2.drawio-20260102191726-95hu32t.png", width: 80%),
+  caption: [Administration-Side Use Case Diagram]
+)
 
 == Non-Functional Requirements
 
@@ -259,21 +292,30 @@ The system uses a dual ER diagram design separating user-side and administration
 
 This separation reduces system complexity and makes business logic clearer, providing a solid foundation for database implementation.
 
+=== User-Side ER Diagram
+
+#figure(
+  image("image-20260122221521953-1769091325170-6.png", width: 90%),
+  caption: [User-Side ER Diagram]
+)
+
+=== Administration-Side ER Diagram
+
+#figure(
+  image("image-20260122221537523-1769091340156-8.png", width: 90%),
+  caption: [Administration-Side ER Diagram]
+)
+
 = Technical Framework
 
 == System Architecture
 
 The system adopts a *modern full-stack Web architecture* with clear separation of responsibilities:
 
-```
-Browser Client
-   ↓ HTTP/HTTPS RESTful API
-Frontend Application (Vue + Vike)
-   ↓ Business Requests
-Backend Service (Express)
-   ↓ ORM Queries
-Database (PostgreSQL)
-```
+#figure(
+  image("architecture.svg", width: 50%),
+  caption: [System Architecture Diagram]
+)
 
 This architecture follows the *Frontend-Backend Separation + RESTful API + SSR Support* pattern. The frontend and backend are decoupled through unified API interfaces, with data exchanged via RESTful APIs in JSON format. This separation of presentation logic from business processing logic improves flexibility and maintainability.
 
